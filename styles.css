@@ -1,0 +1,11 @@
+#naruhodo_graph {
+  width: 130vh;
+  height: 80vh;
+  border: 1px solid lightgray;
+}
+
+.container {
+  display: grid;
+  justify-content: center;
+  align-items: center;
+}
