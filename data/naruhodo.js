@@ -1570,4 +1570,11 @@ var edges = [
   { from: 412, to: 405 },
   { from: 412, to: 406 },
   { from: 412, to: 407 },
+  { from: 413, to: 28 },
+  { from: 413, to: 94 },
+  { from: 413, to: 159 },
+  { from: 413, to: 160 },
+  { from: 413, to: 186 },
+  { from: 413, to: 285 },
+  { from: 413, to: 357 },
 ];
