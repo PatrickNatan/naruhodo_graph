@@ -17,9 +17,13 @@ function redrawAll() {
       size: 16,
       color: "#87CEEB",
     },
+    edges: {
+      width: 2,
+      arrows: "to",
+    },
     physics: {
       solver: "forceAtlas2Based",
-      stabilization: { iterations: 0 },
+      stabilization: { iterations: 1 },
     },
   };
 
