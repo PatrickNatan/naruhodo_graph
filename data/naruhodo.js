@@ -412,6 +412,7 @@ var nodes = [
   { id: 411, label: "Por que traímos? – Parte 1 de 2" },
   { id: 412, label: "Por que traímos? – Parte 2 de 2" },
   { id: 413, label: "Como sabemos se uma coisa é causa de outra?" },
+  { id: 414, label: "A educação científica salvará o mundo?" },
 ];
 
 var edges = [
@@ -1577,4 +1578,10 @@ var edges = [
   { from: 413, to: 186 },
   { from: 413, to: 285 },
   { from: 413, to: 357 },
+  { from: 414, to: 183 },
+  { from: 414, to: 184 },
+  { from: 414, to: 284 },
+  { from: 414, to: 316 },
+  { from: 414, to: 343 },
+  { from: 414, to: 373 },
 ];
