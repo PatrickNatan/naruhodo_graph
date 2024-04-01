@@ -12,6 +12,9 @@ function redrawAll() {
   };
 
   var options = {
+    layout: {
+      improvedLayout: false,
+    },
     nodes: {
       shape: "dot",
       size: 16,
