@@ -3,6 +3,7 @@ var edges = new vis.DataSet(edges);
 var network;
 var allNodes;
 var highlightActive = false;
+
 function redrawAll() {
   const container = document.getElementById("naruhodo_graph");
 
@@ -36,8 +37,13 @@ function redrawAll() {
 
   network.on("click", neighbourhoodHighlight);
 }
-
+function search() {
+  const epNumber = document.getElementById("EpNumber").value;
+  const convertToNode = { nodes: [parseInt(epNumber)] }
+  neighbourhoodHighlight(convertToNode)
+}
 function neighbourhoodHighlight(params) {
+  console.log(params)
   highlightActive = true;
   var i, j;
   var selectedNode = params.nodes[0];
@@ -82,7 +88,7 @@ function neighbourhoodHighlight(params) {
 
     // all second degree nodes get a different color and their label back
     for (i = 0; i < allConnectedNodes.length; i++) {
-      allNodes[allConnectedNodes[i]].color = "rgba(150,150,150,0.75)";
+      allNodes[allConnectedNodes[i]].color = "rgba(106,90,205,0.3)";
       if (allNodes[allConnectedNodes[i]].hiddenLabel !== undefined) {
         allNodes[allConnectedNodes[i]].label =
           allNodes[allConnectedNodes[i]].hiddenLabel;
@@ -101,7 +107,7 @@ function neighbourhoodHighlight(params) {
     }
 
     // the main node gets its own color and its label back.
-    allNodes[selectedNode].color = undefined;
+    allNodes[selectedNode].color = "rgba(255, 0, 0, 1)";
     if (allNodes[selectedNode].hiddenLabel !== undefined) {
       allNodes[selectedNode].label = allNodes[selectedNode].hiddenLabel;
       allNodes[selectedNode].hiddenLabel = undefined;

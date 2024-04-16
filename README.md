@@ -19,10 +19,6 @@ HTML, CSS e JS
 VisJs para apresentação dos grafos
 https://github.com/visjs/vis-network
 
-## WIP :hammer:
-
-- [ ] Adicionar barra de pesquisa de Episodios
-
 ## Como contribuir? :shipit:
 
 ~~por favor~~
