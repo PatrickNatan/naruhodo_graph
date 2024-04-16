@@ -413,6 +413,7 @@ var nodes = [
   { id: 412, label: "Por que traímos? – Parte 2 de 2" },
   { id: 413, label: "Como sabemos se uma coisa é causa de outra?" },
   { id: 414, label: "A educação científica salvará o mundo?" },
+  { id: 415, label: "Subir escadas pode ajudar pessoas com transtornos psiquiátricos?" },
 ];
 
 var edges = [
@@ -1584,4 +1585,10 @@ var edges = [
   { from: 414, to: 316 },
   { from: 414, to: 343 },
   { from: 414, to: 373 },
+  { from: 415, to: 218 },
+  { from: 415, to: 297 },
+  { from: 415, to: 307 },
+  { from: 415, to: 312 },
+  { from: 415, to: 342 },
+  { from: 415, to: 395 },
 ];
