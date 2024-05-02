@@ -5,7 +5,7 @@ https://www.b9.com.br/shows/naruhodo/
 
 ## Status :arrow_up:
 
-Atualizado até o episodio 415
+Atualizado até o episodio 416
 
 ## Como usar 🖱️
 

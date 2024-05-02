@@ -414,6 +414,7 @@ var nodes = [
   { id: 413, label: "Como sabemos se uma coisa é causa de outra?" },
   { id: 414, label: "A educação científica salvará o mundo?" },
   { id: 415, label: "Subir escadas pode ajudar pessoas com transtornos psiquiátricos?" },
+  { id: 416, label: "Saunas melhoram a saúde?" },
 ];
 
 var edges = [
@@ -1591,4 +1592,7 @@ var edges = [
   { from: 415, to: 312 },
   { from: 415, to: 342 },
   { from: 415, to: 395 },
+  { from: 416, to: 52 },
+  { from: 416, to: 295 },
+  { from: 416, to: 396 },
 ];
