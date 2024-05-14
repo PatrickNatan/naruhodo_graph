@@ -380,6 +380,7 @@ var nodes = [
   { id: 414, label: "A educação científica salvará o mundo?" },
   { id: 415, label: "Subir escadas pode ajudar pessoas com transtornos psiquiátricos?" },
   { id: 416, label: "Saunas melhoram a saúde?" },
+  { id: 417, label: "Por que respondemos desastres com altruísmo?" },
 ];
 
 var edges = [
@@ -1270,4 +1271,15 @@ var edges = [
   { from: 416, to: 52 },
   { from: 416, to: 295 },
   { from: 416, to: 396 },
+  { from: 417, to: 61 },
+  { from: 417, to: 208 },
+  { from: 417, to: 226 },
+  { from: 417, to: 262 },
+  { from: 417, to: 267 },
+  { from: 417, to: 280 },
+  { from: 417, to: 341 },
+  { from: 417, to: 345 },
+  { from: 417, to: 357 },
+  { from: 417, to: 396 },
+  { from: 417, to: 404 },
 ];
