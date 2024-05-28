@@ -381,6 +381,7 @@ var nodes = [
   { id: 415, label: "Subir escadas pode ajudar pessoas com transtornos psiquiátricos?" },
   { id: 416, label: "Saunas melhoram a saúde?" },
   { id: 417, label: "Por que respondemos desastres com altruísmo?" },
+  { id: 418, label: "O que é a birra?" },
 ];
 
 var edges = [
@@ -1282,4 +1283,11 @@ var edges = [
   { from: 417, to: 357 },
   { from: 417, to: 396 },
   { from: 417, to: 404 },
+  { from: 418, to: 83 },
+  { from: 418, to: 123 },
+  { from: 418, to: 156 },
+  { from: 418, to: 164 },
+  { from: 418, to: 281 },
+  { from: 418, to: 348 },
+  { from: 418, to: 407 },
 ];
