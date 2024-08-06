@@ -385,6 +385,7 @@ var nodes = [
   { id: 419, label: "Maconha faz mal?", size: 32 },
   { id: 421, label: "Por que guardamos segredos?" },
   { id: 422, label: "Crianças acreditam em contos de fadas?" },
+  { id: 423, label: "Crianças acreditam em contos de fadas?" },
 ];
 
 var edges = [
@@ -1312,4 +1313,8 @@ var edges = [
   { from: 422, to: 362 },
   { from: 422, to: 378 },
   { from: 422, to: 413 },
+  { from: 423, to: 129 },
+  { from: 423, to: 234 },
+  { from: 423, to: 297 },
+  { from: 423, to: 318 },
 ]
