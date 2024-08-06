@@ -383,6 +383,7 @@ var nodes = [
   { id: 417, label: "Por que respondemos desastres com altruísmo?" },
   { id: 418, label: "O que é a birra?" },
   { id: 419, label: "Maconha faz mal?", size: 32 },
+  { id: 421, label: "Por que guardamos segredos?" },
 ];
 
 var edges = [
@@ -1296,4 +1297,12 @@ var edges = [
   { from: 419, to: 207 },
   { from: 419, to: 267 },
   { from: 419, to: 371 },
+  { from: 421, to: 261 },
+  { from: 421, to: 238 },
+  { from: 421, to: 280 },
+  { from: 421, to: 286 },
+  { from: 421, to: 306 },
+  { from: 421, to: 338 },
+  { from: 421, to: 366 },
+  { from: 421, to: 411 },
 ];
