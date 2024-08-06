@@ -382,6 +382,7 @@ var nodes = [
   { id: 416, label: "Saunas melhoram a saúde?" },
   { id: 417, label: "Por que respondemos desastres com altruísmo?" },
   { id: 418, label: "O que é a birra?" },
+  { id: 419, label: "Maconha faz mal?", size: 32 },
 ];
 
 var edges = [
@@ -1290,4 +1291,9 @@ var edges = [
   { from: 418, to: 281 },
   { from: 418, to: 348 },
   { from: 418, to: 407 },
+  { from: 419, to: 49 },
+  { from: 419, to: 85 },
+  { from: 419, to: 207 },
+  { from: 419, to: 267 },
+  { from: 419, to: 371 },
 ];
