@@ -3,7 +3,6 @@ var edges = new vis.DataSet(edges);
 var network;
 var allNodes;
 var highlightActive = false;
-
 function redrawAll() {
   const container = document.getElementById("naruhodo_graph");
 
@@ -27,7 +26,9 @@ function redrawAll() {
     },
     physics: {
       solver: "forceAtlas2Based",
-      stabilization: { iterations: 1 },
+      timestep: 0.5,
+      maxVelocity: 150,
+      stabilization: { iterations: 100 },
     },
   };
 
@@ -37,6 +38,7 @@ function redrawAll() {
 
   network.on("click", neighbourhoodHighlight);
 }
+
 function search() {
   const epNumber = document.getElementById("EpNumber").value;
   const convertToNode = { nodes: [parseInt(epNumber)] }
