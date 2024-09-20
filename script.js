@@ -25,10 +25,16 @@ function redrawAll() {
       arrows: "to",
     },
     physics: {
+      forceAtlas2Based: {
+        gravitationalConstant: -26,
+        centralGravity: 0.005,
+        springLength: 230,
+        springConstant: 0.18,
+      },
+      maxVelocity: 100,
       solver: "forceAtlas2Based",
       timestep: 0.5,
-      maxVelocity: 150,
-      stabilization: { iterations: 100 },
+      stabilization: { iterations: 150 },
     },
   };
 
