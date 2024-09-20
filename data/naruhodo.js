@@ -385,7 +385,8 @@ var nodes = [
   { id: 419, label: "Maconha faz mal?", size: 32 },
   { id: 421, label: "Por que guardamos segredos?" },
   { id: 422, label: "Crianças acreditam em contos de fadas?" },
-  { id: 423, label: "Crianças acreditam em contos de fadas?" },
+  { id: 423, label: "Lentes que filtram a cor azul são benéficas?" },
+  { id: 424, label: "O que é competitividade?", size: 32 },
 ];
 
 var edges = [
@@ -1317,4 +1318,12 @@ var edges = [
   { from: 423, to: 234 },
   { from: 423, to: 297 },
   { from: 423, to: 318 },
+  { from: 424, to: 166 },
+  { from: 424, to: 187 },
+  { from: 424, to: 211 },
+  { from: 424, to: 251 },
+  { from: 424, to: 281 },
+  { from: 424, to: 340 },
+  { from: 424, to: 404 },
+  { from: 424, to: 415 },
 ]

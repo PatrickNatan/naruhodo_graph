@@ -5,7 +5,10 @@ https://www.b9.com.br/shows/naruhodo/
 
 ## Status :arrow_up:
 
-Atualizado até o episodio 423
+Atualizado até o episodio 424
+
+Observação:
+Episodios duplos, por terem a mesma referencia, são fundidos em um único nó
 
 ## Como usar 🖱️
 
