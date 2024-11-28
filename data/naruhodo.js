@@ -389,6 +389,7 @@ var nodes = [
   { id: 424, label: "O que é competitividade?", size: 32 },
   { id: 426, label: "Seu nome pode afetar a forma do seu rosto?" },
   { id: 427, label: "Prêmio IgNobel 2024", size: 32 },
+  { id: 429, label: "Qual o impacto das bets em nossas vidas?" },
 ];
 
 var edges = [
@@ -1340,4 +1341,8 @@ var edges = [
   { from: 427, to: 297 },
   { from: 427, to: 309 },
   { from: 427, to: 339 },
+  { from: 429, to: 17 },
+  { from: 429, to: 106 },
+  { from: 429, to: 207 },
+  { from: 429, to: 359 },
 ]
