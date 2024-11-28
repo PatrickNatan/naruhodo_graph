@@ -390,6 +390,7 @@ var nodes = [
   { id: 426, label: "Seu nome pode afetar a forma do seu rosto?" },
   { id: 427, label: "Prêmio IgNobel 2024", size: 32 },
   { id: 429, label: "Qual o impacto das bets em nossas vidas?" },
+  { id: 430, label: "Por que é tão difícil deixar o rancor de lado?" },
 ];
 
 var edges = [
@@ -1345,4 +1346,19 @@ var edges = [
   { from: 429, to: 106 },
   { from: 429, to: 207 },
   { from: 429, to: 359 },
+  { from: 430, to: 140 },
+  { from: 430, to: 220 },
+  { from: 430, to: 261 },
+  { from: 430, to: 262 },
+  { from: 430, to: 286 },
+  { from: 430, to: 306 },
+  { from: 430, to: 309 },
+  { from: 430, to: 341 },
+  { from: 430, to: 345 },
+  { from: 430, to: 352 },
+  { from: 430, to: 366 },
+  { from: 430, to: 387 },
+  { from: 430, to: 393 },
+  { from: 430, to: 404 },
+  { from: 430, to: 411 },
 ]
