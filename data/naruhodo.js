@@ -387,6 +387,7 @@ var nodes = [
   { id: 422, label: "Crianças acreditam em contos de fadas?" },
   { id: 423, label: "Lentes que filtram a cor azul são benéficas?" },
   { id: 424, label: "O que é competitividade?", size: 32 },
+  { id: 426, label: "Seu nome pode afetar a forma do seu rosto?" },
 ];
 
 var edges = [
@@ -1326,4 +1327,9 @@ var edges = [
   { from: 424, to: 340 },
   { from: 424, to: 404 },
   { from: 424, to: 415 },
+  { from: 426, to: 132 },
+  { from: 426, to: 168 },
+  { from: 426, to: 172 },
+  { from: 426, to: 201 },
+  { from: 426, to: 289 },
 ]
