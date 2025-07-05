@@ -19,8 +19,8 @@ Ou clone o repositorio e clique no index.html...
 ## Tecnologia 🧑‍💻
 
 HTML, CSS e JS
-VisJs para apresentação dos grafos
-https://github.com/visjs/vis-network
+d3js para apresentação dos grafos
+https://d3js.org/
 
 ## Como contribuir? :shipit:
 
