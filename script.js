@@ -277,7 +277,7 @@ async function initGraph() {
         .classed("degree2", true)
         .attr("fill", "rgba(106,90,205,0.3)");
       node.filter(d => secondDegree.has(d.id)).select("text").text(d => `${d.id}: ${d.label}`).attr("fill", "#374151");
-      secondDegree.forEach(id => episodesToShow.push(graphNodes.find(n => n.id === id)));
+      //secondDegree.forEach(id => episodesToShow.push(graphNodes.find(n => n.id === id)));
 
       displayEpisodeList(episodesToShow);
       displayNodeInfo(graphNodes.find(n => n.id === selectedNodeId));
