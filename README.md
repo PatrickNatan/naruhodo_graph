@@ -5,10 +5,9 @@ https://www.b9.com.br/shows/naruhodo/
 
 ![simplescreenrecorder-2025-07-13_16 45 21](https://github.com/user-attachments/assets/fd5a2637-7276-4d3e-a7ad-0c0432d1016c)
 
-
 ## Status :arrow_up:
 
-Atualizado até o episodio 430
+Atualizado até o episodio 445
 
 Observação:
 Episodios duplos, por terem a mesma referencia, são fundidos em um único nó
@@ -23,7 +22,7 @@ Ou clone o repositorio e clique no index.html...
 
 - HTML, CSS e JS
 - d3js para apresentação dos grafos
-https://d3js.org/
+  https://d3js.org/
 - PaperCSS para estilização https://www.getpapercss.com/
 
 ## Como contribuir? :shipit:
