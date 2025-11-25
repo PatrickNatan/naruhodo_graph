@@ -7,7 +7,7 @@ https://www.b9.com.br/shows/naruhodo/
 
 ## Status :arrow_up:
 
-Atualizado até o episodio 454
+Atualizado até o episodio 455
 
 Observação:
 Episodios duplos, por terem a mesma referencia, são fundidos em um único nó
