@@ -16,14 +16,22 @@ Episodios duplos, por terem a mesma referencia, são fundidos em um único nó
 
 Acesse https://patricknatan.github.io/naruhodo_graph/
 
-Ou clone o repositorio e clique no index.html...
+Ou clone o repositorio e rode localmente:
+
+```bash
+npm install
+npm run dev
+```
 
 ## Tecnologia 🧑‍💻
 
 - HTML, CSS e JS
-- d3js para apresentação dos grafos
-  https://d3js.org/
-- PaperCSS para estilização https://www.getpapercss.com/
+- [Sigma.js](https://www.sigmajs.org/) para renderização do grafo (WebGL)
+- [graphology](https://graphology.github.io/) para estrutura de dados e métricas do grafo
+- [ForceAtlas2](https://graphology.github.io/standard-library/layout-forceatlas2) para layout
+- [Vite](https://vite.dev/) como bundler
+- [PaperCSS](https://www.getpapercss.com/) para estilização
+- [ESLint](https://eslint.org/) para linting
 
 ## Como contribuir? :shipit:
 

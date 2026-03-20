@@ -1,0 +1,33 @@
+{
+  "name": "naruhodo_graph",
+  "version": "1.0.0",
+  "description": "A ideia desse repositorio é criar um FrontEnd web simples que consiga apresentar uma rede de conexões entre os episodios do podcast Naruhodo. https://www.b9.com.br/shows/naruhodo/",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PatrickNatan/naruhodo_graph.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PatrickNatan/naruhodo_graph/issues"
+  },
+  "homepage": "https://github.com/PatrickNatan/naruhodo_graph#readme",
+  "dependencies": {
+    "graphology": "^0.26.0",
+    "graphology-layout-forceatlas2": "^0.10.1",
+    "graphology-metrics": "^2.4.0",
+    "sigma": "^3.0.2",
+    "vite": "^8.0.1"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.4"
+  }
+}

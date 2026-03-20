@@ -59,7 +59,7 @@ img {
 
 .container {
     background-color: white;
-    padding: 1.5rem; 
+    padding: 1.5rem;
     border-radius: 0.5rem;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     max-width: 48rem;
@@ -176,7 +176,7 @@ img {
 }
 /* --- */
 
-/* Grafo */
+/* Grafo (Sigma.js canvas) */
 #naruhodo_graph {
     width: 100%;
     height: 80vh;
@@ -184,11 +184,7 @@ img {
     border-radius: 0.5rem;
     background-color: #ffffff;
     box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
-}
-
-#naruhodo_graph svg {
-    width: 100%;
-    height: 100%;
+    position: relative;
 }
 /* --- */
 
@@ -227,9 +223,9 @@ img {
 #episodeList tr:hover {
     background-color: #f3f4f6;
 }
-
 /* --- */
-/* Informações do nó */
+
+/* Informacoes do no */
 #nodeInfoContent {
     padding: 1rem;
     font-size: 0.9rem;
@@ -259,48 +255,5 @@ img {
     color: #6b7280;
     border-top: 1px solid #e5e7eb;
     padding-top: 1rem;
-}/* --- */
-
-/* D3 me ajuda senhor */
-/* Aresta */
-.link {
-    stroke: #9ca3af;
-    stroke-width: 2px;
-    opacity: 0.7;
-}
-.link.dimmed {
-    opacity: 0.1;
-    stroke: #d1d5db;
-}
-/* Nó */
-.node circle {
-    stroke: #ffffff;
-    stroke-width: 2px;
-    cursor: grab;
-}
-.node circle:hover {
-    r: 20px;
-}
-.node circle.highlighted {
-    fill: #ef4444 !important;
-    stroke-width: 3px;
-}
-.node circle.degree1 {
-    fill: #4caf50 !important;
-}
-.node circle.degree2 {
-    fill: #ffc107 !important;
-}
-.node.dimmed {
-    opacity: 0.1;
-}
-.node text {
-    font-size: 10px;
-    fill: #374151;
-    text-anchor: middle;
-    transition: fill 0.3s ease-in-out;
-}
-.node.dimmed text {
-    fill: #9ca3af;
 }
 /* --- */

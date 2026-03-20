@@ -1,399 +1,340 @@
-const svg = d3.select("#naruhodo_graph svg");
-let width = +svg.attr("width") || svg.node().getBoundingClientRect().width;
-let height = +svg.attr("height") || svg.node().getBoundingClientRect().height;
+import Graph from "graphology";
+import Sigma from "sigma";
+import { EdgeArrowProgram } from "sigma/rendering";
+import forceAtlas2 from "graphology-layout-forceatlas2";
+import { degreeCentrality } from "graphology-metrics/centrality/degree.js";
 
-const g = svg.append("g");
+const BASE = import.meta.env.BASE_URL;
 
-let graphNodes = [];
-let graphLinks = [];
-let nodesById = new Map();
+async function loadCSV(url, delimiter = ",") {
+  const res = await fetch(url);
+  const text = await res.text();
+  const lines = text.trim().split("\n");
+  const headers = lines[0].split(delimiter).map(h => h.trim());
+  return lines.slice(1).map(line => {
+    const vals = line.split(delimiter).map(v => v.trim());
+    const obj = {};
+    headers.forEach((h, i) => (obj[h] = vals[i]));
+    return obj;
+  });
+}
 
 async function initGraph() {
-  const nodesData = await d3.dsv(";", "data/nodes.csv");
-  const edgesData = await d3.csv("data/edges.csv");
+  const nodesData = await loadCSV(`${BASE}data/nodes.csv`, ";");
+  const edgesData = await loadCSV(`${BASE}data/edges.csv`, ",");
 
-  graphNodes = nodesData.map(d => ({
-    id: +d.numero,
-    label: d.titulo
-  }));
+  const graph = new Graph({ type: "directed" });
 
-  const nodeIds = new Set(graphNodes.map(d => d.id));
-
-  graphLinks = edgesData.map(d => ({
-    source: +d.ep,
-    target: +d.referencia
-  })).filter(link => nodeIds.has(link.source) && nodeIds.has(link.target));
-
-  nodesById = new Map(graphNodes.map(d => [d.id, d]));
-  graphLinks.forEach(link => {
-    link.source = nodesById.get(link.source);
-    link.target = nodesById.get(link.target);
-  });
-
-  const simulation = d3.forceSimulation(graphNodes)
-    .force("link", d3.forceLink(graphLinks))
-    .force("charge", d3.forceManyBody().strength(-300))
-    .force("x", d3.forceX())
-    .force("y", d3.forceY());
-
-  svg.append("defs").append("marker")
-    .attr("id", "arrowhead")
-    .attr("viewBox", "-0 -5 10 10")
-    .attr("refX", 18)
-    .attr("refY", 0)
-    .attr("orient", "auto")
-    .attr("markerWidth", 10)
-    .attr("markerHeight", 10)
-    .attr("xoverflow", "visible")
-    .append("svg:path")
-    .attr("d", "M 0,-5 L 10 ,0 L 0,5")
-    .attr("fill", "#999")
-    .style("stroke", "none");
-
-  const link = g.append("g")
-    .attr("class", "links")
-    .selectAll("line")
-    .data(graphLinks)
-    .enter().append("line")
-    .attr("class", "link")
-    .attr("stroke-linecap", "round")
-    .attr("marker-end", "url(#arrowhead)");
-
-  const node = g.append("g")
-    .attr("class", "nodes")
-    .selectAll("g")
-    .data(graphNodes)
-    .enter().append("g")
-    .attr("class", "node");
-
-  node.append("circle")
-    .attr("r", 16)
-    .attr("fill", "#87CEEB")
-    .call(d3.drag()
-      .on("start", dragstarted)
-      .on("drag", dragged)
-      .on("end", dragended));
-
-  node.append("text")
-    .text(d => d.id)
-    .attr("dy", "0.35em")
-    .attr("font-size", "10px");
-
-  simulation.on("tick", () => {
-    link
-      .attr("x1", d => d.source.x)
-      .attr("y1", d => d.source.y)
-      .attr("x2", d => d.target.x)
-      .attr("y2", d => d.target.y);
-
-    node
-      .attr("transform", d => `translate(${d.x},${d.y})`);
-  });
-
-  function dragstarted(event, d) {
-    if (!event.active) simulation.alphaTarget(0.3).restart();
-    d.fx = d.x;
-    d.fy = d.y;
-  }
-
-  function dragged(event, d) {
-    d.fx = event.x;
-    d.fy = event.y;
-  }
-
-  function dragended(event, d) {
-    if (!event.active) simulation.alphaTarget(0);
-    d.fx = null;
-    d.fy = null;
-  }
-
-  function zoomed({ transform }) {
-    g.attr("transform", transform);
-  }
-
-  const zoom = d3.zoom()
-    .scaleExtent([0.1, 2])
-    .on("zoom", zoomed);
-
-  svg.call(zoom);
-
-  window.addEventListener('resize', debounce(() => {
-    width = svg.node().getBoundingClientRect().width;
-    height = svg.node().getBoundingClientRect().height;
-
-    svg.attr("width", width);
-    svg.attr("height", height);
-
-    simulation.force("center", d3.forceCenter(width / 2, height / 2));
-    simulation.alpha(1).restart();
-
-    svg.call(zoom.transform, d3.zoomIdentity);
-  }, 200));
-
-  function debounce(func, delay) {
-    let timeout;
-    return function (...args) {
-      const context = this;
-      clearTimeout(timeout);
-      timeout = setTimeout(() => func.apply(context, args), delay);
-    };
-  }
-
-  window.dispatchEvent(new Event('resize'));
-
-  const searchInput = d3.select("#EpNumber");
-  const searchButton = d3.select("#searchButton");
-  const clearButton = d3.select("#clearButton");
-  const episodeListDiv = d3.select("#episodeList");
-  const nodeInfoDiv = d3.select("#nodeInfoContent");
-
-  let adjacencyList = new Map();
-
-  graphLinks.forEach(link => {
-    if (!adjacencyList.has(link.source.id)) {
-      adjacencyList.set(link.source.id, []);
-    }
-    if (!adjacencyList.has(link.target.id)) {
-      adjacencyList.set(link.target.id, []);
-    }
-    adjacencyList.get(link.source.id).push(link.target.id);
-    adjacencyList.get(link.target.id).push(link.source.id);
-  });
-
-  function calculateNetworkMetrics() {
-    graphNodes.forEach(node => {
-      node.metrics = { inDegree: 0, outDegree: 0, degree: 0, clustering: 0 };
+  nodesData.forEach(d => {
+    graph.addNode(d.numero, {
+      label: `${d.numero}: ${d.titulo}`,
+      titulo: d.titulo,
+      size: 8,
+      color: "#87CEEB",
+      x: Math.random() * 100,
+      y: Math.random() * 100,
     });
+  });
 
-    graphLinks.forEach(link => {
-      const sourceNode = nodesById.get(link.source.id);
-      const targetNode = nodesById.get(link.target.id);
-      if (sourceNode) sourceNode.metrics.outDegree++;
-      if (targetNode) targetNode.metrics.inDegree++;
-    });
-
-    graphNodes.forEach(node => {
-      const neighbors = adjacencyList.get(node.id) || [];
-      node.metrics.degree = neighbors.length;
-
-      if (neighbors.length < 2) {
-        node.metrics.clustering = 0;
-        return;
+  edgesData.forEach(d => {
+    const src = d.ep.trim();
+    const tgt = d.referencia.trim();
+    if (graph.hasNode(src) && graph.hasNode(tgt)) {
+      const edgeKey = `${src}->${tgt}`;
+      if (!graph.hasEdge(edgeKey)) {
+        graph.addEdgeWithKey(edgeKey, src, tgt, {
+          color: "#9ca3af",
+          size: 1.5,
+          type: "arrow",
+        });
       }
+    }
+  });
 
+  // Pre-compute initial layout (fast settle)
+  const fa2Settings = {
+    barnesHutOptimize: true,
+    barnesHutTheta: 0.5,
+    gravity: 0.02,
+    scalingRatio: 700,
+    strongGravityMode: false,
+    linLogMode: false,
+    adjustSizes: true,
+    slowDown: 1,
+  };
+
+  forceAtlas2.assign(graph, { iterations: 500, settings: fa2Settings });
+
+  // Metrics
+  degreeCentrality(graph);
+  graph.forEachNode(node => {
+    const deg = graph.degree(node);
+    graph.setNodeAttribute(node, "size", Math.max(5, 3 + deg * 0.8));
+  });
+
+  // Calculate detailed metrics per node
+  const nodeMetrics = new Map();
+  graph.forEachNode(node => {
+    const inDeg = graph.inDegree(node);
+    const outDeg = graph.outDegree(node);
+    const neighbors = graph.neighbors(node);
+    const k = neighbors.length;
+    let clustering = 0;
+
+    if (k >= 2) {
       let linkCount = 0;
       for (let i = 0; i < neighbors.length; i++) {
         for (let j = i + 1; j < neighbors.length; j++) {
-          const neighborA = neighbors[i];
-          const neighborB = neighbors[j];
-          const neighborsOfA = adjacencyList.get(neighborA) || [];
-          if (neighborsOfA.includes(neighborB)) {
+          if (graph.hasEdge(neighbors[i], neighbors[j]) || graph.hasEdge(neighbors[j], neighbors[i])) {
             linkCount++;
           }
         }
       }
+      clustering = (2 * linkCount) / (k * (k - 1));
+    }
 
-      const k = neighbors.length;
-      node.metrics.clustering = (k * (k - 1)) > 0 ? (2 * linkCount) / (k * (k - 1)) : 0;
+    nodeMetrics.set(node, {
+      degree: k,
+      inDegree: inDeg,
+      outDegree: outDeg,
+      clustering,
     });
-  }
+  });
 
-  function getNeighbors(startNodeId, degreeLimit) {
-    let visited = new Set();
-    let queue = [{ id: startNodeId, degree: 0 }];
-    let firstDegreeNeighbors = new Set();
-    let secondDegreeNeighbors = new Set();
+  // Sigma renderer
+  const container = document.getElementById("naruhodo_graph");
+  const renderer = new Sigma(graph, container, {
+    defaultEdgeType: "arrow",
+    edgeProgramClasses: {
+      arrow: EdgeArrowProgram,
+    },
+    labelRenderedSizeThreshold: 12,
+    labelSize: 12,
+    labelColor: { color: "#374151" },
+    nodeReducer: null,
+    edgeReducer: null,
+    minCameraRatio: 0.05,
+    maxCameraRatio: 3,
+  });
 
-    visited.add(startNodeId);
 
-    while (queue.length > 0) {
-      let { id, degree } = queue.shift();
+  // State
+  let highlightedNodes = new Set();
+  let highlightedEdges = new Set();
+  let firstDegreeNodes = new Set();
+  let secondDegreeNodes = new Set();
 
-      if (degree >= degreeLimit) continue;
+  function getNeighborhood(nodeId, degreeLimit) {
+    const first = new Set();
+    const second = new Set();
+    const visited = new Set([nodeId]);
 
-      const neighbors = adjacencyList.get(id) || [];
-      neighbors.forEach(neighborId => {
-        if (!visited.has(neighborId)) {
-          visited.add(neighborId);
-          queue.push({ id: neighborId, degree: degree + 1 });
-          if (degree + 1 === 1) {
-            firstDegreeNeighbors.add(neighborId);
-          } else if (degree + 1 === 2) {
-            secondDegreeNeighbors.add(neighborId);
+    const neighbors = graph.neighbors(nodeId);
+    neighbors.forEach(n => {
+      first.add(n);
+      visited.add(n);
+    });
+
+    if (degreeLimit >= 2) {
+      first.forEach(n1 => {
+        graph.neighbors(n1).forEach(n2 => {
+          if (!visited.has(n2)) {
+            second.add(n2);
+            visited.add(n2);
           }
-        }
+        });
       });
     }
-    return { firstDegree: firstDegreeNeighbors, secondDegree: secondDegreeNeighbors };
+
+    return { firstDegree: first, secondDegree: second };
   }
 
-  function neighbourhoodHighlight(selectedNodeId) {
-    let episodesToShow = [];
-    node.classed("dimmed", false)
-      .selectAll("circle")
-      .attr("fill", "#87CEEB")
-      .classed("highlighted", false)
-      .classed("degree1", false)
-      .classed("degree2", false);
-    node.attr("opacity", 1);
-    node.selectAll("text").attr("fill", "#374151").text(d => d.id);
-
-    link.classed("dimmed", false).classed("highlighted", false);
-    link.attr("opacity", 1);
-
-    if (selectedNodeId !== null) {
-      const { firstDegree, secondDegree } = getNeighbors(selectedNodeId, 2);
-
-      node.classed("dimmed", true).attr("opacity", 0.2);
-      node.selectAll("text").attr("fill", "#9ca3af");
-      link.classed("dimmed", true).attr("opacity", 0.15);
-
-      node.filter(d => d.id === selectedNodeId)
-        .classed("dimmed", false)
-        .attr("opacity", 1)
-        .select("circle")
-        .classed("highlighted", true)
-        .attr("fill", "rgba(255, 0, 0, 1)");
-
-      node.filter(d => d.id === selectedNodeId)
-        .select("text")
-        .text(d => `${d.id}: ${d.label}`)
-        .attr("fill", "#374151");
-      episodesToShow.push(graphNodes.find(n => n.id === selectedNodeId));
-
-      node.filter(d => firstDegree.has(d.id))
-        .classed("dimmed", false)
-        .attr("opacity", 1)
-        .select("circle")
-        .classed("degree1", true)
-        .attr("fill", "rgba(106,90,205,0.3)");
-      node.filter(d => firstDegree.has(d.id)).select("text").text(d => `${d.id}: ${d.label}`).attr("fill", "#374151");
-      firstDegree.forEach(id => episodesToShow.push(graphNodes.find(n => n.id === id)));
-
-      node.filter(d => secondDegree.has(d.id))
-        .classed("dimmed", false)
-        .attr("opacity", 1)
-        .select("circle")
-        .classed("degree2", true)
-        .attr("fill", "rgba(106,90,205,0.3)");
-      node.filter(d => secondDegree.has(d.id)).select("text").text(d => `${d.id}: ${d.label}`).attr("fill", "#374151");
-      //secondDegree.forEach(id => episodesToShow.push(graphNodes.find(n => n.id === id)));
-
-      displayEpisodeList(episodesToShow);
-      displayNodeInfo(graphNodes.find(n => n.id === selectedNodeId));
-
-      link.filter(d => {
-        return (d.source.id === selectedNodeId && firstDegree.has(d.target.id)) ||
-          (d.target.id === selectedNodeId && firstDegree.has(d.source.id)) ||
-          (firstDegree.has(d.source.id) && secondDegree.has(d.target.id)) ||
-          (firstDegree.has(d.target.id) && secondDegree.has(d.source.id));
-      })
-        .classed("dimmed", false)
-        .attr("opacity", 1);
-    }
-  }
-
-  node.on("click", (event, d) => {
-    searchMessage.textContent = `Episodio ${d.id}: ${d.label}`;
-    neighbourhoodHighlight(d.id);
-    searchInput.property("value", d.id);
-    displayNodeInfo(d);
-  });
-
-  searchButton.on("click", () => {
-    const searchMessage = document.getElementById('searchMessage');
-    searchMessage.textContent = '';
-    const epNumber = parseInt(searchInput.property("value"));
-
-    if (isNaN(epNumber)) {
-      searchMessage.className = 'error';
-      searchMessage.textContent = `Número de episódio invalido`;
+  function highlightNode(nodeId) {
+    if (nodeId === null) {
+      highlightedNodes.clear();
+      highlightedEdges.clear();
+      firstDegreeNodes.clear();
+      secondDegreeNodes.clear();
+      resetNodeAppearance();
+      renderer.refresh();
+      displayEpisodeList([]);
+      displayNodeInfo(null);
       return;
     }
 
-    let targetNode = graphNodes.find(n => n.id === epNumber);
-    let finalEpNumber = epNumber;
+    const { firstDegree, secondDegree } = getNeighborhood(nodeId, 2);
+    firstDegreeNodes = firstDegree;
+    secondDegreeNodes = secondDegree;
 
-    if (!targetNode) {
-      finalEpNumber = epNumber - 1;
-      targetNode = graphNodes.find(n => n.id === finalEpNumber);
-    }
+    highlightedNodes = new Set([nodeId, ...firstDegree, ...secondDegree]);
 
-    if (targetNode) {
-      neighbourhoodHighlight(finalEpNumber);
-      const scale = 1.5;
-      const transform = d3.zoomIdentity
-        .translate(width / 2, height / 2)
-        .scale(scale)
-        .translate(-targetNode.x, -targetNode.y);
-      svg.transition().duration(750).call(zoom.transform, transform);
-    } else {
-      searchMessage.className = 'error';
-      searchMessage.textContent = `Episodio ${epNumber} não encontrado`;
-    }
-  });
-
-  const tabButtons = d3.selectAll(".tab-button");
-  tabButtons.on("click", function () {
-    const tabId = d3.select(this).attr("data-tab");
-    d3.selectAll(".tab-content").style("display", "none");
-    d3.select("#" + tabId).style("display", "block");
-    tabButtons.classed("active", false);
-    d3.select(this).classed("active", true);
-  });
-
-  clearButton.on("click", () => {
-    const searchMessage = document.getElementById('searchMessage');
-    searchMessage.textContent = '';
-    searchInput.property("value", "");
-    displayEpisodeList([]);
-    neighbourhoodHighlight(null);
-    displayNodeInfo(null);
-  });
-
-  function displayEpisodeList(episodes) {
-    if (episodes.length === 0) {
-      episodeListDiv.style("display", "none");
-      return;
-    }
-
-    episodes.sort((a, b) => a.id - b.id);
-
-    let tableHtml = "<table>";
-    tableHtml += "<thead><tr><th>ID do Episódio</th><th>Título do Episódio</th></tr></thead>";
-    tableHtml += "<tbody>";
-
-    episodes.forEach(episode => {
-      tableHtml += `<tr><td>${episode.id}</td><td>${episode.label}</td></tr>`;
+    highlightedEdges = new Set();
+    graph.forEachEdge((edge, attrs, src, tgt) => {
+      const srcIn = highlightedNodes.has(src);
+      const tgtIn = highlightedNodes.has(tgt);
+      if (srcIn && tgtIn) {
+        highlightedEdges.add(edge);
+      }
     });
 
-    tableHtml += "</tbody></table>";
-    episodeListDiv.style("display", "block").html(tableHtml);
+    renderer.setSetting("nodeReducer", (node, data) => {
+      const res = { ...data };
+      if (node === nodeId) {
+        res.color = "#ef4444";
+        res.zIndex = 2;
+        res.highlighted = true;
+      } else if (firstDegreeNodes.has(node)) {
+        res.color = "#4caf50";
+        res.zIndex = 1;
+      } else if (secondDegreeNodes.has(node)) {
+        res.color = "#ffc107";
+        res.zIndex = 1;
+      } else {
+        res.color = "#e5e7eb";
+        res.label = null;
+        res.zIndex = 0;
+      }
+      return res;
+    });
+
+    renderer.setSetting("edgeReducer", (edge, data) => {
+      const res = { ...data };
+      if (!highlightedEdges.has(edge)) {
+        res.color = "#f0f0f0";
+        res.hidden = true;
+      }
+      return res;
+    });
+
+    renderer.refresh();
+
+    // Episode list
+    const episodes = [{ id: nodeId, label: graph.getNodeAttribute(nodeId, "titulo") }];
+    firstDegree.forEach(n => {
+      episodes.push({ id: n, label: graph.getNodeAttribute(n, "titulo") });
+    });
+    displayEpisodeList(episodes);
+    displayNodeInfo(nodeId);
   }
 
-  function displayNodeInfo(node) {
-    if (!node || !node.metrics) {
-      nodeInfoDiv.html("<p>Clique ou pesquise um nó no grafo para ver suas métricas.</p>");
+  function resetNodeAppearance() {
+    renderer.setSetting("nodeReducer", null);
+    renderer.setSetting("edgeReducer", null);
+  }
+
+  // Click handler
+  renderer.on("clickNode", ({ node }) => {
+    const searchMessage = document.getElementById("searchMessage");
+    const titulo = graph.getNodeAttribute(node, "titulo");
+    searchMessage.textContent = `Episodio ${node}: ${titulo}`;
+    searchMessage.className = "message";
+    document.getElementById("EpNumber").value = node;
+    highlightNode(node);
+  });
+
+  renderer.on("clickStage", () => {
+    highlightNode(null);
+    const searchMessage = document.getElementById("searchMessage");
+    searchMessage.textContent = "";
+  });
+
+  // Search
+  document.getElementById("searchButton").addEventListener("click", () => {
+    const searchMessage = document.getElementById("searchMessage");
+    searchMessage.textContent = "";
+    const epNumber = document.getElementById("EpNumber").value.trim();
+
+    if (!epNumber || isNaN(parseInt(epNumber))) {
+      searchMessage.className = "error";
+      searchMessage.textContent = "Numero de episodio invalido";
       return;
     }
 
-    const { metrics, id, label } = node;
-    const content = `
-        <h4>Métricas para o Episódio ${id}</h4>
-        <p><strong>Título:</strong> ${label}</p>
-        <ul>
-            <li><strong>Grau (Total de conexões):</strong> ${metrics.degree}</li>
-            <li><strong>Grau de Entrada (Citações Recebidas):</strong> ${metrics.inDegree}</li>
-            <li><strong>Grau de Saída (Citações Feitas):</strong> ${metrics.outDegree}</li>
-            <li><strong>Coeficiente de Agrupamento:</strong> ${metrics.clustering.toFixed(3)}</li>
-        </ul>
-        <small>O <strong>coeficiente de agrupamento</strong> mede o quão conectados os vizinhos deste nó estão entre si. Um valor de 1 significa que todos os vizinhos são conectados, formando um "clique". Um valor de 0 significa que nenhum vizinho se conecta.</small>
-        <small>Ver mais em <a href="https://pt.wikipedia.org/wiki/Coeficiente_de_agrupamento">https://pt.wikipedia.org/wiki/Coeficiente_de_agrupamento</a></small>
-    `;
-    nodeInfoDiv.html(content);
+    let targetNode = epNumber;
+    if (!graph.hasNode(targetNode)) {
+      targetNode = String(parseInt(epNumber) - 1);
+    }
+
+    if (graph.hasNode(targetNode)) {
+      highlightNode(targetNode);
+      searchMessage.className = "message";
+      searchMessage.textContent = `Episodio ${targetNode}: ${graph.getNodeAttribute(targetNode, "titulo")}`;
+
+      // Camera animation to node
+      const nodePos = renderer.getNodeDisplayData(targetNode);
+      if (nodePos) {
+        renderer.getCamera().animate(
+          { x: nodePos.x, y: nodePos.y, ratio: 0.3 },
+          { duration: 750 }
+        );
+      }
+    } else {
+      searchMessage.className = "error";
+      searchMessage.textContent = `Episodio ${epNumber} nao encontrado`;
+    }
+  });
+
+  // Clear
+  document.getElementById("clearButton").addEventListener("click", () => {
+    const searchMessage = document.getElementById("searchMessage");
+    searchMessage.textContent = "";
+    document.getElementById("EpNumber").value = "";
+    highlightNode(null);
+  });
+
+  // Tabs
+  document.querySelectorAll(".tab-button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const tabId = btn.getAttribute("data-tab");
+      document.querySelectorAll(".tab-content").forEach(tc => (tc.style.display = "none"));
+      document.getElementById(tabId).style.display = "block";
+      document.querySelectorAll(".tab-button").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+    });
+  });
+
+  // Display functions
+  function displayEpisodeList(episodes) {
+    const div = document.getElementById("episodeList");
+    if (!episodes.length) {
+      div.style.display = "none";
+      return;
+    }
+
+    episodes.sort((a, b) => parseInt(a.id) - parseInt(b.id));
+
+    let html = "<table><thead><tr><th>ID do Episodio</th><th>Titulo do Episodio</th></tr></thead><tbody>";
+    episodes.forEach(ep => {
+      html += `<tr><td>${ep.id}</td><td>${ep.label}</td></tr>`;
+    });
+    html += "</tbody></table>";
+    div.style.display = "block";
+    div.innerHTML = html;
   }
 
-  calculateNetworkMetrics();
+  function displayNodeInfo(nodeId) {
+    const div = document.getElementById("nodeInfoContent");
+    if (!nodeId) {
+      div.innerHTML = "<p>Clique ou pesquise um no no grafo para ver suas metricas.</p>";
+      return;
+    }
+
+    const metrics = nodeMetrics.get(nodeId);
+    const titulo = graph.getNodeAttribute(nodeId, "titulo");
+
+    div.innerHTML = `
+      <h4>Metricas para o Episodio ${nodeId}</h4>
+      <p><strong>Titulo:</strong> ${titulo}</p>
+      <ul>
+        <li><strong>Grau (Total de conexoes):</strong> ${metrics.degree}</li>
+        <li><strong>Grau de Entrada (Citacoes Recebidas):</strong> ${metrics.inDegree}</li>
+        <li><strong>Grau de Saida (Citacoes Feitas):</strong> ${metrics.outDegree}</li>
+        <li><strong>Coeficiente de Agrupamento:</strong> ${metrics.clustering.toFixed(3)}</li>
+      </ul>
+      <small>O <strong>coeficiente de agrupamento</strong> mede o quao conectados os vizinhos deste no estao entre si. Um valor de 1 significa que todos os vizinhos sao conectados, formando um "clique". Um valor de 0 significa que nenhum vizinho se conecta.</small>
+      <small>Ver mais em <a href="https://pt.wikipedia.org/wiki/Coeficiente_de_agrupamento">Wikipedia</a></small>
+    `;
+  }
 }
 
 initGraph();
