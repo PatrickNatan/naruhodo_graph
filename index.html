@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-L7Y76TEQ9S"></script>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-L7Y76TEQ9S');
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-L7Y76TEQ9S');
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,12 +19,14 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="manifest" href="/site.webmanifest">
     <meta name="theme-color" content="#ffffff">
-    <meta name="description" content="Visualize a rede de conexões entre os episódios do podcast Naruhodo. Explore quais episódios se referenciam e descubra métricas de cada nó.">
+    <meta name="description"
+        content="Visualize a rede de conexões entre os episódios do podcast Naruhodo. Explore quais episódios se referenciam e descubra métricas de cada nó.">
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="Grafo do Naruhodo">
-    <meta property="og:description" content="Visualize a rede de conexões entre os episódios do podcast Naruhodo. Explore quais episódios se referenciam e descubra métricas de cada nó.">
+    <meta property="og:description"
+        content="Visualize a rede de conexões entre os episódios do podcast Naruhodo. Explore quais episódios se referenciam e descubra métricas de cada nó.">
     <meta property="og:url" content="https://patricknatan.github.io/naruhodo_graph/">
     <meta property="og:image" content="https://patricknatan.github.io/naruhodo_graph/android-chrome-512x512.png">
 
@@ -36,15 +39,20 @@
     <link rel="stylesheet" href="https://unpkg.com/papercss@1.9.2/dist/paper.min.css">
     <link rel="stylesheet" href="/styles.css">
 </head>
+
 <body>
     <div class="podcast-buttons">
-        <a href="https://open.spotify.com/show/1EAAAOIGupWaGwidmMTTi0" target="_blank" class="podcast-button spotify-button">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg" alt="Spotify" class="podcast-icon">
+        <a href="https://open.spotify.com/show/1EAAAOIGupWaGwidmMTTi0" target="_blank"
+            class="podcast-button spotify-button">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg" alt="Spotify"
+                class="podcast-icon">
             Ouça no Spotify
         </a>
         <a href="https://orelo.cc/podcast/5ed14b79f3ecec6004c1d7d2" target="_blank" class="podcast-button orelo-button">
             <svg viewBox="0 0 39 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="podcast-icon orelo-icon">
-                <path d="M17.3747 0.666504C7.77951 0.666504 0 8.44696 0 18.0036C0 27.5603 7.77951 35.3332 17.347 35.3332H21.3557C22.7232 35.3332 24.0679 35.2649 25.367 34.9688C26.4762 34.7259 27.5322 34.3692 28.5274 33.8985C30.4267 33.0484 32.174 31.849 33.6859 30.3385C36.9831 27.0593 38.7988 22.6947 38.7988 18.0492C38.7988 13.4037 36.9831 9.03903 33.6859 5.75986C30.9813 3.04998 27.5246 1.34967 23.7944 0.833499C23.7944 0.833499 23.7944 0.833499 23.7944 0.825908C23.7032 0.818318 23.6196 0.810727 23.5285 0.803136C22.8143 0.712048 22.085 0.666504 21.3557 0.666504H17.3747ZM18.1421 27.9778C17.899 27.5831 17.671 27.1808 17.4583 26.7633C17.3823 26.6115 17.314 26.4597 17.238 26.3003V26.3306C17.238 26.3306 17.2152 26.2775 17.2076 26.2471C16.0756 23.8029 15.4527 20.9792 15.4527 18.0188C15.4527 13.8667 16.6758 9.98028 18.8258 7.04268C20.9758 9.97269 22.199 13.8667 22.199 18.0188C22.199 22.1633 20.9834 26.0422 18.841 28.9722C18.5903 28.661 18.3624 28.327 18.1421 27.9778ZM24.2958 17.2977C24.2958 17.199 24.2958 17.1079 24.2882 17.0093C24.2806 16.8271 24.273 16.6449 24.2578 16.4627C24.2578 16.3716 24.2426 16.2805 24.235 16.197C24.2198 15.9769 24.197 15.7568 24.1742 15.5367C24.1666 15.4532 24.1514 15.3773 24.1438 15.2938C24.121 15.1192 24.0982 14.9446 24.0755 14.77C24.0679 14.6941 24.0527 14.6182 24.0451 14.5423C24.0071 14.3222 23.9691 14.0944 23.9311 13.8743C23.9159 13.7908 23.9007 13.7149 23.8855 13.639C23.8475 13.434 23.802 13.2215 23.7564 13.0166C23.7412 12.9558 23.7336 12.9027 23.7184 12.842C23.6728 12.637 23.6196 12.4321 23.5664 12.2271C23.5513 12.1588 23.5285 12.0905 23.5133 12.0222C23.4525 11.7945 23.3841 11.5743 23.3157 11.3466C23.3005 11.2935 23.2778 11.2403 23.2626 11.1872C23.2018 10.9898 23.1334 10.7925 23.065 10.5951C23.0498 10.5496 23.0346 10.4964 23.0119 10.4509C22.9283 10.2232 22.8447 10.003 22.7535 9.78292C22.7308 9.72978 22.708 9.67665 22.6852 9.62352C22.594 9.39579 22.4952 9.16807 22.3889 8.94794C22.2825 8.72022 22.1762 8.4925 22.0622 8.27237C22.0394 8.22683 22.0166 8.18128 21.9938 8.14333C21.8799 7.9232 21.7583 7.70307 21.6368 7.49053C21.6216 7.46776 21.6064 7.4374 21.5912 7.41463C21.4696 7.20968 21.3481 7.00473 21.2265 6.80737C21.2113 6.7846 21.1961 6.75423 21.1809 6.73146C21.0442 6.51892 20.9074 6.31398 20.7631 6.10903C20.7403 6.07866 20.7175 6.0483 20.6947 6.01794C20.5504 5.81299 20.3984 5.60804 20.2389 5.40309C19.4944 4.44667 18.6435 3.58892 17.6862 2.81467H21.3633C25.443 2.81467 29.2719 4.42389 32.1589 7.29317C35.0382 10.1625 36.626 13.9806 36.626 18.0416C36.626 22.1026 35.0382 25.9207 32.1589 28.79C30.9281 30.0197 29.5226 31.0065 27.9956 31.7428C27.0915 32.1375 26.1343 32.35 25.1391 32.35C23.3689 32.35 21.7279 31.6821 20.3376 30.5207C23.1334 26.8696 24.4477 22.0571 24.3034 17.3053L24.2958 17.2977Z" fill="currentColor"></path>
+                <path
+                    d="M17.3747 0.666504C7.77951 0.666504 0 8.44696 0 18.0036C0 27.5603 7.77951 35.3332 17.347 35.3332H21.3557C22.7232 35.3332 24.0679 35.2649 25.367 34.9688C26.4762 34.7259 27.5322 34.3692 28.5274 33.8985C30.4267 33.0484 32.174 31.849 33.6859 30.3385C36.9831 27.0593 38.7988 22.6947 38.7988 18.0492C38.7988 13.4037 36.9831 9.03903 33.6859 5.75986C30.9813 3.04998 27.5246 1.34967 23.7944 0.833499C23.7944 0.833499 23.7944 0.833499 23.7944 0.825908C23.7032 0.818318 23.6196 0.810727 23.5285 0.803136C22.8143 0.712048 22.085 0.666504 21.3557 0.666504H17.3747ZM18.1421 27.9778C17.899 27.5831 17.671 27.1808 17.4583 26.7633C17.3823 26.6115 17.314 26.4597 17.238 26.3003V26.3306C17.238 26.3306 17.2152 26.2775 17.2076 26.2471C16.0756 23.8029 15.4527 20.9792 15.4527 18.0188C15.4527 13.8667 16.6758 9.98028 18.8258 7.04268C20.9758 9.97269 22.199 13.8667 22.199 18.0188C22.199 22.1633 20.9834 26.0422 18.841 28.9722C18.5903 28.661 18.3624 28.327 18.1421 27.9778ZM24.2958 17.2977C24.2958 17.199 24.2958 17.1079 24.2882 17.0093C24.2806 16.8271 24.273 16.6449 24.2578 16.4627C24.2578 16.3716 24.2426 16.2805 24.235 16.197C24.2198 15.9769 24.197 15.7568 24.1742 15.5367C24.1666 15.4532 24.1514 15.3773 24.1438 15.2938C24.121 15.1192 24.0982 14.9446 24.0755 14.77C24.0679 14.6941 24.0527 14.6182 24.0451 14.5423C24.0071 14.3222 23.9691 14.0944 23.9311 13.8743C23.9159 13.7908 23.9007 13.7149 23.8855 13.639C23.8475 13.434 23.802 13.2215 23.7564 13.0166C23.7412 12.9558 23.7336 12.9027 23.7184 12.842C23.6728 12.637 23.6196 12.4321 23.5664 12.2271C23.5513 12.1588 23.5285 12.0905 23.5133 12.0222C23.4525 11.7945 23.3841 11.5743 23.3157 11.3466C23.3005 11.2935 23.2778 11.2403 23.2626 11.1872C23.2018 10.9898 23.1334 10.7925 23.065 10.5951C23.0498 10.5496 23.0346 10.4964 23.0119 10.4509C22.9283 10.2232 22.8447 10.003 22.7535 9.78292C22.7308 9.72978 22.708 9.67665 22.6852 9.62352C22.594 9.39579 22.4952 9.16807 22.3889 8.94794C22.2825 8.72022 22.1762 8.4925 22.0622 8.27237C22.0394 8.22683 22.0166 8.18128 21.9938 8.14333C21.8799 7.9232 21.7583 7.70307 21.6368 7.49053C21.6216 7.46776 21.6064 7.4374 21.5912 7.41463C21.4696 7.20968 21.3481 7.00473 21.2265 6.80737C21.2113 6.7846 21.1961 6.75423 21.1809 6.73146C21.0442 6.51892 20.9074 6.31398 20.7631 6.10903C20.7403 6.07866 20.7175 6.0483 20.6947 6.01794C20.5504 5.81299 20.3984 5.60804 20.2389 5.40309C19.4944 4.44667 18.6435 3.58892 17.6862 2.81467H21.3633C25.443 2.81467 29.2719 4.42389 32.1589 7.29317C35.0382 10.1625 36.626 13.9806 36.626 18.0416C36.626 22.1026 35.0382 25.9207 32.1589 28.79C30.9281 30.0197 29.5226 31.0065 27.9956 31.7428C27.0915 32.1375 26.1343 32.35 25.1391 32.35C23.3689 32.35 21.7279 31.6821 20.3376 30.5207C23.1334 26.8696 24.4477 22.0571 24.3034 17.3053L24.2958 17.2977Z"
+                    fill="currentColor"></path>
             </svg>
             Ouça na Orelo
         </a>
@@ -69,6 +77,7 @@
             <button class="tab-button active" data-tab="graphTab">Grafo</button>
             <button class="tab-button" data-tab="detailsTab">Episódios Relacionados</button>
             <button class="tab-button" data-tab="nodeInfoTab">Informações do nó</button>
+            <button class="tab-button" data-tab="rankingTab">Ranking de episódios</button>
         </div>
 
         <div id="graphTab" class="tab-content active">
@@ -92,8 +101,77 @@
                 <p>Clique ou pesquise um nó no grafo para ver suas métricas.</p>
             </div>
         </div>
+
+        <div id="rankingTab" class="tab-content">
+            <div class="ranking-controls" style="justify-content: space-between">
+                <label class="ranking-sort-label">
+                    Ordenar por:
+                    <select id="rankingSort">
+                        <option value="degree">Centralidade (total)</option>
+                        <option value="inDegree">Centralidade de entrada (citações recebidas)</option>
+                        <option value="outDegree">Centralidade de saída (citações feitas)</option>
+                        <option value="pagerank">PageRank (influência na rede)</option>
+                        <option value="betweenness">Betweenness (ponte entre grupos)</option>
+                        <option value="authority">Authority — HITS (episódio clássico de referência)</option>
+                        <option value="hub">Hub — HITS (episódio bem pesquisado)</option>
+                        <option value="coreness">K-core (núcleo da rede)</option>
+                    </select>
+                </label>
+                <input type="text" id="rankingSearch" class="ranking-search"
+                    placeholder="Filtrar por número ou título…">
+                <button type="button" id="exportCsvButton" class="export-csv-button">↓ Exportar CSV</button>
+            </div>
+            <div id="rankingList"></div>
+
+            <dl class="metrics-glossary">
+                <dt>Centralidade (grau total)</dt>
+                <dd>Número total de conexões do episódio — soma de citações recebidas e feitas. Indica o episódio mais
+                    "movimentado" da rede. <a href="https://pt.wikipedia.org/wiki/Centralidade_de_grau"
+                        target="_blank">Wikipedia</a></dd>
+
+                <dt>Centralidade de entrada</dt>
+                <dd>Quantos outros episódios citam este. Alta entrada = episódio frequentemente referenciado, um
+                    "clássico" da rede. <a href="https://pt.wikipedia.org/wiki/Centralidade_de_grau"
+                        target="_blank">Wikipedia</a></dd>
+
+                <dt>Centralidade de saída</dt>
+                <dd>Quantos episódios este cita. Alta saída = episódio que referencia muito outros, um "compilado" de
+                    referências. <a href="https://pt.wikipedia.org/wiki/Centralidade_de_grau"
+                        target="_blank">Wikipedia</a></dd>
+
+                <dt>PageRank</dt>
+                <dd>Mede a influência do episódio ponderando pela importância de quem o cita — ser citado por um
+                    episódio muito citado vale mais do que ser citado por um isolado. Originalmente o algoritmo do
+                    Google. <a href="https://pt.wikipedia.org/wiki/PageRank" target="_blank">Wikipedia</a></dd>
+
+                <dt>Betweenness Centrality</dt>
+                <dd>Frequência com que o episódio aparece nos menores caminhos entre todos os outros pares de episódios.
+                    Alto betweenness = "ponte" entre grupos temáticos; removê-lo fragmentaria a rede. <a
+                        href="https://pt.wikipedia.org/wiki/Intermedia%C3%A7%C3%A3o" target="_blank">Wikipedia</a></dd>
+
+                <dt>Authority (HITS)</dt>
+                <dd>Score do algoritmo HITS que mede o quanto o episódio é citado por bons hubs. Alta authority =
+                    episódio de referência canônico no tema. <a href="https://en.wikipedia.org/wiki/HITS_algorithm"
+                        target="_blank">Wikipedia</a></dd>
+
+                <dt>Hub (HITS)</dt>
+                <dd>Score do algoritmo HITS que mede o quanto o episódio cita boas authorities. Alto hub = episódio bem
+                    pesquisado, que aponta para as fontes certas. <a
+                        href="https://en.wikipedia.org/wiki/HITS_algorithm" target="_blank">Wikipedia</a></dd>
+
+                <dt>K-core</dt>
+                <dd>Nível do subgrafo mais coeso ao qual o episódio pertence: um k-core é o maior subconjunto onde todo
+                    nó tem ao menos k conexões com outros do mesmo grupo. Maior k = episódio no núcleo da rede. <a
+                        href="https://en.wikipedia.org/wiki/Degeneracy_(graph_theory)" target="_blank">Wikipedia</a>
+                </dd>
+            </dl>
+        </div>
     </div>
+
+    <p class="episodes-note">Episódios em duas partes são mesclados — apenas o número da primeira parte é considerado.
+    </p>
 
     <script type="module" src="/script.js"></script>
 </body>
+
 </html>

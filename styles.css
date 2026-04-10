@@ -272,6 +272,128 @@ img {
 }
 /* --- */
 
+/* Ranking tab */
+.ranking-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.ranking-sort-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #4b5563;
+}
+
+.ranking-sort-label select {
+    padding: 0.3rem 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.export-csv-button {
+    background-color: #059669;
+    color: white;
+    font-weight: 600;
+    padding: 0.3rem 0.9rem;
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: background-color 200ms;
+    white-space: nowrap;
+}
+
+.export-csv-button:hover {
+    background-color: #047857;
+}
+
+.ranking-search {
+    padding: 0.3rem 0.6rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    width: 14rem;
+}
+
+#rankingList {
+    max-height: 28rem;
+    overflow-y: auto;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+}
+
+#rankingList table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+#rankingList th, #rankingList td {
+    padding: 0.6rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+#rankingList th {
+    background-color: #f9fafb;
+    font-weight: 600;
+    color: #4b5563;
+    position: sticky;
+    top: 0;
+    cursor: help;
+}
+
+#rankingList tr:hover {
+    background-color: #f3f4f6;
+}
+
+.metrics-glossary {
+    margin-top: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 1rem;
+    font-size: 0.82rem;
+    color: #4b5563;
+    line-height: 1.5;
+}
+
+.metrics-glossary dt {
+    font-weight: 600;
+    color: #1f2937;
+    margin-top: 0.75rem;
+}
+
+.metrics-glossary dd {
+    margin-left: 0;
+    margin-top: 0.1rem;
+}
+
+.metrics-glossary a {
+    color: #3b82f6;
+    text-decoration: none;
+}
+
+.metrics-glossary a:hover {
+    text-decoration: underline;
+}
+/* --- */
+
+/* Episodes note */
+.episodes-note {
+    font-size: 0.78rem;
+    color: #9ca3af;
+    text-align: center;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+    font-style: italic;
+}
+/* --- */
+
 /* Informacoes do no */
 #nodeInfoContent {
     padding: 1rem;

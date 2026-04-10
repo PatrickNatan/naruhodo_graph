@@ -4,6 +4,9 @@ import { EdgeArrowProgram } from "sigma/rendering";
 import forceAtlas2 from "graphology-layout-forceatlas2";
 import FA2Layout from "graphology-layout-forceatlas2/worker";
 import { degreeCentrality } from "graphology-metrics/centrality/degree.js";
+import betweenness from "graphology-metrics/centrality/betweenness.js";
+import pagerank from "graphology-metrics/centrality/pagerank.js";
+import hits from "graphology-metrics/centrality/hits.js";
 
 const BASE = import.meta.env.BASE_URL;
 
@@ -73,6 +76,26 @@ async function initGraph() {
     graph.setNodeAttribute(node, "size", Math.max(5, 3 + deg * 0.8));
   });
 
+  const pagerankScores = pagerank(graph);
+  const betweennessScores = betweenness(graph, { normalized: true });
+  const hitsScores = hits(graph);
+
+  // K-core decomposition (Batagelj-Zaversnik, O(V+E))
+  const kCoreDeg = new Map();
+  graph.forEachNode(node => kCoreDeg.set(node, graph.degree(node)));
+  const coreness = new Map();
+  const kCoreProcessed = new Set();
+  const kCoreSorted = graph.nodes().slice().sort((a, b) => kCoreDeg.get(a) - kCoreDeg.get(b));
+  for (const v of kCoreSorted) {
+    coreness.set(v, kCoreDeg.get(v));
+    kCoreProcessed.add(v);
+    for (const u of graph.neighbors(v)) {
+      if (!kCoreProcessed.has(u) && kCoreDeg.get(u) > kCoreDeg.get(v)) {
+        kCoreDeg.set(u, kCoreDeg.get(u) - 1);
+      }
+    }
+  }
+
   const nodeMetrics = new Map();
   graph.forEachNode(node => {
     const inDeg = graph.inDegree(node);
@@ -98,6 +121,11 @@ async function initGraph() {
       inDegree: inDeg,
       outDegree: outDeg,
       clustering,
+      pagerank: pagerankScores[node] ?? 0,
+      betweenness: betweennessScores[node] ?? 0,
+      hub: hitsScores.hubs[node] ?? 0,
+      authority: hitsScores.authorities[node] ?? 0,
+      coreness: coreness.get(node) ?? 0,
     });
   });
 
@@ -408,6 +436,106 @@ async function initGraph() {
     div.style.display = "block";
     div.innerHTML = html;
   }
+
+  // Ranking tab
+  const rankingSort = document.getElementById("rankingSort");
+  const rankingSearch = document.getElementById("rankingSearch");
+
+  function renderRanking() {
+    const sortKey = rankingSort.value;
+    const query = rankingSearch.value.trim().toLowerCase();
+
+    let rows = [];
+    nodeMetrics.forEach((m, id) => {
+      const titulo = graph.getNodeAttribute(id, "titulo");
+      if (query && !id.includes(query) && !titulo.toLowerCase().includes(query)) return;
+      rows.push({ id, titulo, ...m });
+    });
+
+    rows.sort((a, b) => b[sortKey] - a[sortKey]);
+
+    const div = document.getElementById("rankingList");
+    if (!rows.length) {
+      div.innerHTML = "<p style='padding:1rem'>Nenhum episódio encontrado.</p>";
+      return;
+    }
+
+    let html = `<table>
+      <thead><tr>
+        <th>#</th>
+        <th>Ep</th>
+        <th>Título</th>
+        <th title="Grau total de conexões">Centralidade</th>
+        <th title="Quantos nós apontam para este">Entrada</th>
+        <th title="Quantos nós este aponta">Saída</th>
+        <th title="Importância ponderada pela relevância de quem cita">PageRank</th>
+        <th title="Frequência com que este nó aparece nos menores caminhos entre outros pares">Betweenness</th>
+        <th title="HITS: citado por bons hubs — episódio clássico de referência">Authority</th>
+        <th title="HITS: cita boas authorities — episódio bem pesquisado">Hub</th>
+        <th title="K-core: nível do subgrafo coeso ao qual pertence">K-core</th>
+      </tr></thead><tbody>`;
+
+    rows.forEach((r, i) => {
+      html += `<tr>
+        <td>${i + 1}</td>
+        <td>${r.id}</td>
+        <td>${r.titulo}</td>
+        <td>${r.degree}</td>
+        <td>${r.inDegree}</td>
+        <td>${r.outDegree}</td>
+        <td>${r.pagerank.toFixed(4)}</td>
+        <td>${r.betweenness.toFixed(4)}</td>
+        <td>${r.authority.toFixed(4)}</td>
+        <td>${r.hub.toFixed(4)}</td>
+        <td>${r.coreness}</td>
+      </tr>`;
+    });
+
+    html += "</tbody></table>";
+    div.innerHTML = html;
+  }
+
+  rankingSort.addEventListener("change", renderRanking);
+  rankingSearch.addEventListener("input", renderRanking);
+  renderRanking();
+
+  document.getElementById("exportCsvButton").addEventListener("click", () => {
+    const sortKey = rankingSort.value;
+    const query = rankingSearch.value.trim().toLowerCase();
+
+    let rows = [];
+    nodeMetrics.forEach((m, id) => {
+      const titulo = graph.getNodeAttribute(id, "titulo");
+      if (query && !id.includes(query) && !titulo.toLowerCase().includes(query)) return;
+      rows.push({ id, titulo, ...m });
+    });
+    rows.sort((a, b) => b[sortKey] - a[sortKey]);
+
+    const headers = ["Ep", "Titulo", "Centralidade", "Entrada", "Saida", "PageRank", "Betweenness", "Authority", "Hub", "K-core"];
+    const csvRows = [headers.join(";")];
+    rows.forEach(r => {
+      csvRows.push([
+        r.id,
+        `"${r.titulo}"`,
+        r.degree,
+        r.inDegree,
+        r.outDegree,
+        r.pagerank.toFixed(4),
+        r.betweenness.toFixed(4),
+        r.authority.toFixed(4),
+        r.hub.toFixed(4),
+        r.coreness,
+      ].join(";"));
+    });
+
+    const blob = new Blob([csvRows.join("\n")], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "naruhodo_metricas.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
 
   function displayNodeInfo(nodeId) {
     const div = document.getElementById("nodeInfoContent");
