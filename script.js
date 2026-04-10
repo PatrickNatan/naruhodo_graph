@@ -6,7 +6,7 @@ import FA2Layout from "graphology-layout-forceatlas2/worker";
 import { degreeCentrality } from "graphology-metrics/centrality/degree.js";
 import betweenness from "graphology-metrics/centrality/betweenness.js";
 import pagerank from "graphology-metrics/centrality/pagerank.js";
-import hits from "graphology-metrics/centrality/hits.js";
+
 
 const BASE = import.meta.env.BASE_URL;
 
@@ -78,23 +78,6 @@ async function initGraph() {
 
   const pagerankScores = pagerank(graph);
   const betweennessScores = betweenness(graph, { normalized: true });
-  const hitsScores = hits(graph);
-
-  // K-core decomposition (Batagelj-Zaversnik, O(V+E))
-  const kCoreDeg = new Map();
-  graph.forEachNode(node => kCoreDeg.set(node, graph.degree(node)));
-  const coreness = new Map();
-  const kCoreProcessed = new Set();
-  const kCoreSorted = graph.nodes().slice().sort((a, b) => kCoreDeg.get(a) - kCoreDeg.get(b));
-  for (const v of kCoreSorted) {
-    coreness.set(v, kCoreDeg.get(v));
-    kCoreProcessed.add(v);
-    for (const u of graph.neighbors(v)) {
-      if (!kCoreProcessed.has(u) && kCoreDeg.get(u) > kCoreDeg.get(v)) {
-        kCoreDeg.set(u, kCoreDeg.get(u) - 1);
-      }
-    }
-  }
 
   const nodeMetrics = new Map();
   graph.forEachNode(node => {
@@ -123,9 +106,6 @@ async function initGraph() {
       clustering,
       pagerank: pagerankScores[node] ?? 0,
       betweenness: betweennessScores[node] ?? 0,
-      hub: hitsScores.hubs[node] ?? 0,
-      authority: hitsScores.authorities[node] ?? 0,
-      coreness: coreness.get(node) ?? 0,
     });
   });
 
@@ -470,9 +450,6 @@ async function initGraph() {
         <th title="Quantos nós este aponta">Saída</th>
         <th title="Importância ponderada pela relevância de quem cita">PageRank</th>
         <th title="Frequência com que este nó aparece nos menores caminhos entre outros pares">Betweenness</th>
-        <th title="HITS: citado por bons hubs — episódio clássico de referência">Authority</th>
-        <th title="HITS: cita boas authorities — episódio bem pesquisado">Hub</th>
-        <th title="K-core: nível do subgrafo coeso ao qual pertence">K-core</th>
       </tr></thead><tbody>`;
 
     rows.forEach((r, i) => {
@@ -485,9 +462,6 @@ async function initGraph() {
         <td>${r.outDegree}</td>
         <td>${r.pagerank.toFixed(4)}</td>
         <td>${r.betweenness.toFixed(4)}</td>
-        <td>${r.authority.toFixed(4)}</td>
-        <td>${r.hub.toFixed(4)}</td>
-        <td>${r.coreness}</td>
       </tr>`;
     });
 
@@ -511,7 +485,7 @@ async function initGraph() {
     });
     rows.sort((a, b) => b[sortKey] - a[sortKey]);
 
-    const headers = ["Ep", "Titulo", "Centralidade", "Entrada", "Saida", "PageRank", "Betweenness", "Authority", "Hub", "K-core"];
+    const headers = ["Ep", "Titulo", "Centralidade", "Entrada", "Saida", "PageRank", "Betweenness"];
     const csvRows = [headers.join(";")];
     rows.forEach(r => {
       csvRows.push([
@@ -522,9 +496,6 @@ async function initGraph() {
         r.outDegree,
         r.pagerank.toFixed(4),
         r.betweenness.toFixed(4),
-        r.authority.toFixed(4),
-        r.hub.toFixed(4),
-        r.coreness,
       ].join(";"));
     });
 

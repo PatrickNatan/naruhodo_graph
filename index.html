@@ -112,9 +112,6 @@
                         <option value="outDegree">Centralidade de saída (citações feitas)</option>
                         <option value="pagerank">PageRank (influência na rede)</option>
                         <option value="betweenness">Betweenness (ponte entre grupos)</option>
-                        <option value="authority">Authority — HITS (episódio clássico de referência)</option>
-                        <option value="hub">Hub — HITS (episódio bem pesquisado)</option>
-                        <option value="coreness">K-core (núcleo da rede)</option>
                     </select>
                 </label>
                 <input type="text" id="rankingSearch" class="ranking-search"
@@ -149,21 +146,6 @@
                     Alto betweenness = "ponte" entre grupos temáticos; removê-lo fragmentaria a rede. <a
                         href="https://pt.wikipedia.org/wiki/Intermedia%C3%A7%C3%A3o" target="_blank">Wikipedia</a></dd>
 
-                <dt>Authority (HITS)</dt>
-                <dd>Score do algoritmo HITS que mede o quanto o episódio é citado por bons hubs. Alta authority =
-                    episódio de referência canônico no tema. <a href="https://en.wikipedia.org/wiki/HITS_algorithm"
-                        target="_blank">Wikipedia</a></dd>
-
-                <dt>Hub (HITS)</dt>
-                <dd>Score do algoritmo HITS que mede o quanto o episódio cita boas authorities. Alto hub = episódio bem
-                    pesquisado, que aponta para as fontes certas. <a
-                        href="https://en.wikipedia.org/wiki/HITS_algorithm" target="_blank">Wikipedia</a></dd>
-
-                <dt>K-core</dt>
-                <dd>Nível do subgrafo mais coeso ao qual o episódio pertence: um k-core é o maior subconjunto onde todo
-                    nó tem ao menos k conexões com outros do mesmo grupo. Maior k = episódio no núcleo da rede. <a
-                        href="https://en.wikipedia.org/wiki/Degeneracy_(graph_theory)" target="_blank">Wikipedia</a>
-                </dd>
             </dl>
         </div>
     </div>
