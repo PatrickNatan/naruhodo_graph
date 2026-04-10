@@ -2,6 +2,7 @@ import Graph from "graphology";
 import Sigma from "sigma";
 import { EdgeArrowProgram } from "sigma/rendering";
 import forceAtlas2 from "graphology-layout-forceatlas2";
+import FA2Layout from "graphology-layout-forceatlas2/worker";
 import { degreeCentrality } from "graphology-metrics/centrality/degree.js";
 
 const BASE = import.meta.env.BASE_URL;
@@ -51,19 +52,19 @@ async function initGraph() {
     }
   });
 
-  // Pre-compute initial layout (fast settle)
   const fa2Settings = {
     barnesHutOptimize: true,
     barnesHutTheta: 0.5,
-    gravity: 0.02,
-    scalingRatio: 700,
+    gravity: 0.05,
+    scalingRatio: 400,
     strongGravityMode: false,
     linLogMode: false,
     adjustSizes: true,
-    slowDown: 1,
+    slowDown: 12,
   };
 
-  forceAtlas2.assign(graph, { iterations: 500, settings: fa2Settings });
+  // Pre-compute an initial spread layout
+  forceAtlas2.assign(graph, { iterations: 300, settings: fa2Settings });
 
   // Metrics
   degreeCentrality(graph);
@@ -72,7 +73,6 @@ async function initGraph() {
     graph.setNodeAttribute(node, "size", Math.max(5, 3 + deg * 0.8));
   });
 
-  // Calculate detailed metrics per node
   const nodeMetrics = new Map();
   graph.forEachNode(node => {
     const inDeg = graph.inDegree(node);
@@ -117,6 +117,9 @@ async function initGraph() {
     maxCameraRatio: 3,
   });
 
+  // Live physics worker
+  const fa2Worker = new FA2Layout(graph, { settings: fa2Settings });
+  fa2Worker.start();
 
   // State
   let highlightedNodes = new Set();
@@ -129,8 +132,7 @@ async function initGraph() {
     const second = new Set();
     const visited = new Set([nodeId]);
 
-    const neighbors = graph.neighbors(nodeId);
-    neighbors.forEach(n => {
+    graph.neighbors(nodeId).forEach(n => {
       first.add(n);
       visited.add(n);
     });
@@ -165,14 +167,11 @@ async function initGraph() {
     const { firstDegree, secondDegree } = getNeighborhood(nodeId, 2);
     firstDegreeNodes = firstDegree;
     secondDegreeNodes = secondDegree;
-
     highlightedNodes = new Set([nodeId, ...firstDegree, ...secondDegree]);
 
     highlightedEdges = new Set();
     graph.forEachEdge((edge, attrs, src, tgt) => {
-      const srcIn = highlightedNodes.has(src);
-      const tgtIn = highlightedNodes.has(tgt);
-      if (srcIn && tgtIn) {
+      if (highlightedNodes.has(src) && highlightedNodes.has(tgt)) {
         highlightedEdges.add(edge);
       }
     });
@@ -208,7 +207,6 @@ async function initGraph() {
 
     renderer.refresh();
 
-    // Episode list
     const episodes = [{ id: nodeId, label: graph.getNodeAttribute(nodeId, "titulo") }];
     firstDegree.forEach(n => {
       episodes.push({ id: n, label: graph.getNodeAttribute(n, "titulo") });
@@ -222,8 +220,109 @@ async function initGraph() {
     renderer.setSetting("edgeReducer", null);
   }
 
+  // Animation
+  const sortedNodes = graph.nodes().slice().sort((a, b) => parseInt(a) - parseInt(b));
+  let animRevealedNodes = null;
+  let animInterval = null;
+  let animIndex = 0;
+
+  const animBtn = document.getElementById("animateButton");
+  const animCounter = document.getElementById("animateCounter");
+  const animSpeedSlider = document.getElementById("animateSpeed");
+
+  function getStepDelay() {
+    // speed 1 = 600ms, speed 10 = 20ms
+    const speed = parseInt(animSpeedSlider.value);
+    return Math.round(600 - (speed - 1) * (580 / 9));
+  }
+
+  function stopAnimation(reset = true) {
+    if (animInterval) {
+      clearInterval(animInterval);
+      animInterval = null;
+    }
+    animBtn.textContent = "▶ Animar";
+    animBtn.classList.remove("playing");
+    if (reset) {
+      animRevealedNodes = null;
+      animIndex = 0;
+      animCounter.textContent = "";
+      renderer.setSetting("nodeReducer", null);
+      renderer.setSetting("edgeReducer", null);
+      renderer.refresh();
+    }
+  }
+
+  function stepAnimation() {
+    if (animIndex >= sortedNodes.length) {
+      stopAnimation(false);
+      animCounter.textContent = `Concluído (${sortedNodes.length} nós)`;
+      return;
+    }
+    const node = sortedNodes[animIndex];
+
+    // Spawn near centroid of already-revealed neighbors so physics flies it into place
+    const revealedNeighbors = graph.neighbors(node).filter(n => animRevealedNodes.has(n));
+    if (revealedNeighbors.length > 0) {
+      let cx = 0, cy = 0;
+      revealedNeighbors.forEach(n => {
+        cx += graph.getNodeAttribute(n, "x");
+        cy += graph.getNodeAttribute(n, "y");
+      });
+      cx /= revealedNeighbors.length;
+      cy /= revealedNeighbors.length;
+      graph.setNodeAttribute(node, "x", cx + (Math.random() - 0.5) * 20);
+      graph.setNodeAttribute(node, "y", cy + (Math.random() - 0.5) * 20);
+    }
+
+    animRevealedNodes.add(node);
+    animIndex++;
+    animCounter.textContent = `${animIndex} / ${sortedNodes.length}`;
+    // Reducer reads from the mutated Set on next render — FA2 worker drives re-renders automatically
+    renderer.refresh();
+  }
+
+  function startAnimation() {
+    highlightNode(null);
+    animRevealedNodes = new Set();
+    animIndex = 0;
+
+    // Define reducers ONCE — they close over animRevealedNodes (mutable Set)
+    // No need to re-set them every step
+    renderer.setSetting("nodeReducer", (node, data) => {
+      if (!animRevealedNodes.has(node)) return { ...data, hidden: true, label: null };
+      return data;
+    });
+    renderer.setSetting("edgeReducer", (edge, data) => {
+      const src = graph.source(edge);
+      const tgt = graph.target(edge);
+      if (!animRevealedNodes.has(src) || !animRevealedNodes.has(tgt)) return { ...data, hidden: true };
+      return data;
+    });
+
+    animBtn.textContent = "⏹ Parar";
+    animBtn.classList.add("playing");
+    animInterval = setInterval(stepAnimation, getStepDelay());
+  }
+
+  animBtn.addEventListener("click", () => {
+    if (animInterval) {
+      stopAnimation(true);
+    } else {
+      startAnimation();
+    }
+  });
+
+  animSpeedSlider.addEventListener("input", () => {
+    if (animInterval) {
+      clearInterval(animInterval);
+      animInterval = setInterval(stepAnimation, getStepDelay());
+    }
+  });
+
   // Click handler
   renderer.on("clickNode", ({ node }) => {
+    if (animInterval) stopAnimation(true);
     const searchMessage = document.getElementById("searchMessage");
     const titulo = graph.getNodeAttribute(node, "titulo");
     searchMessage.textContent = `Episodio ${node}: ${titulo}`;
@@ -260,7 +359,6 @@ async function initGraph() {
       searchMessage.className = "message";
       searchMessage.textContent = `Episodio ${targetNode}: ${graph.getNodeAttribute(targetNode, "titulo")}`;
 
-      // Camera animation to node
       const nodePos = renderer.getNodeDisplayData(targetNode);
       if (nodePos) {
         renderer.getCamera().animate(
@@ -293,7 +391,6 @@ async function initGraph() {
     });
   });
 
-  // Display functions
   function displayEpisodeList(episodes) {
     const div = document.getElementById("episodeList");
     if (!episodes.length) {
