@@ -194,6 +194,9 @@ img {
     border-radius: 0.375rem;
     cursor: pointer;
     transition: background-color 200ms;
+    box-sizing: border-box;
+    outline: none;
+    user-select: none;
 }
 
 .animate-button:hover {
@@ -202,6 +205,14 @@ img {
 
 .animate-button.playing {
     background-color: #dc2626;
+}
+
+.animate-button.paused {
+    background-color: #d97706;
+}
+
+.animate-button.paused:hover {
+    background-color: #b45309;
 }
 
 .animate-button.playing:hover {

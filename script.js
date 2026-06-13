@@ -329,6 +329,38 @@ async function initGraph() {
     }
   });
 
+  // Physics toggle
+  let physicsRunning = true;
+  const physicsBtn = document.getElementById("physicsButton");
+  physicsBtn.addEventListener("click", () => {
+    if (physicsRunning) {
+      fa2Worker.stop();
+      physicsBtn.textContent = "▶ Retomar física";
+      physicsBtn.classList.add("paused");
+    } else {
+      fa2Worker.start();
+      physicsBtn.textContent = "⏸ Pausar física";
+      physicsBtn.classList.remove("paused");
+    }
+    physicsRunning = !physicsRunning;
+  });
+
+  // Reset layout — pausa, reseta, despausar
+  document.getElementById("resetLayoutButton").addEventListener("click", () => {
+    fa2Worker.stop();
+    physicsRunning = false;
+    physicsBtn.textContent = "▶ Retomar física";
+    physicsBtn.classList.add("paused");
+
+    graph.forEachNode(node => {
+      graph.setNodeAttribute(node, "x", Math.random() * 100);
+      graph.setNodeAttribute(node, "y", Math.random() * 100);
+    });
+
+    forceAtlas2.assign(graph, { iterations: 300, settings: fa2Settings });
+    renderer.refresh();
+  });
+
   // Click handler
   renderer.on("clickNode", ({ node }) => {
     if (animInterval) stopAnimation(true);
