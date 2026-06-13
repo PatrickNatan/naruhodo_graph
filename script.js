@@ -123,6 +123,7 @@ async function initGraph() {
     edgeReducer: null,
     minCameraRatio: 0.05,
     maxCameraRatio: 3,
+    zOrder: true,
   });
 
   // Live physics worker
