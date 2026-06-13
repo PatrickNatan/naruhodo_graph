@@ -245,6 +245,13 @@ async function initGraph() {
     return Math.round(600 - (speed - 1) * (580 / 9));
   }
 
+  function pauseAnimation() {
+    clearInterval(animInterval);
+    animInterval = null;
+    animBtn.textContent = "▶ Continuar";
+    animBtn.classList.remove("playing");
+  }
+
   function stopAnimation(reset = true) {
     if (animInterval) {
       clearInterval(animInterval);
@@ -260,6 +267,12 @@ async function initGraph() {
       renderer.setSetting("edgeReducer", null);
       renderer.refresh();
     }
+  }
+
+  function resumeAnimation() {
+    animBtn.textContent = "⏸ Pausar";
+    animBtn.classList.add("playing");
+    animInterval = setInterval(stepAnimation, getStepDelay());
   }
 
   function stepAnimation() {
@@ -309,14 +322,16 @@ async function initGraph() {
       return data;
     });
 
-    animBtn.textContent = "⏹ Parar";
+    animBtn.textContent = "⏸ Pausar";
     animBtn.classList.add("playing");
     animInterval = setInterval(stepAnimation, getStepDelay());
   }
 
   animBtn.addEventListener("click", () => {
     if (animInterval) {
-      stopAnimation(true);
+      pauseAnimation();
+    } else if (animRevealedNodes !== null && animIndex < sortedNodes.length) {
+      resumeAnimation();
     } else {
       startAnimation();
     }
