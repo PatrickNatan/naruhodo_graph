@@ -6,7 +6,7 @@ Visualização interativa da rede de conexões entre os episódios do podcast [N
 
 ## Status :arrow_up:
 
-Atualizado até o episódio 463
+Atualizado até o episódio 464
 
 > Episódios em duas partes são mesclados — apenas o número da primeira parte é considerado.
 
