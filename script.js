@@ -564,6 +564,14 @@ async function initGraph() {
     setFocusMode(!focusMode);
   });
 
+  document.getElementById("zoomInButton").addEventListener("click", () => {
+    renderer.getCamera().animatedZoom({ factor: 1.5, duration: prefersReducedMotion ? 0 : 200 });
+  });
+
+  document.getElementById("zoomOutButton").addEventListener("click", () => {
+    renderer.getCamera().animatedUnzoom({ factor: 1.5, duration: prefersReducedMotion ? 0 : 200 });
+  });
+
   document.getElementById("searchButton").addEventListener("click", () => {
     const searchMessage = document.getElementById("searchMessage");
     searchMessage.textContent = "";
