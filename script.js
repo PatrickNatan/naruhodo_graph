@@ -218,10 +218,12 @@ function stopAnimation(reset = true) {
 
 function resumeAnimation() {
   renderer.setSetting("nodeReducer", (node, data) => {
+    if (!animRevealedNodes) return data;
     if (!animRevealedNodes.has(node)) return { ...data, hidden: true, label: null };
     return data;
   });
   renderer.setSetting("edgeReducer", (edge, data) => {
+    if (!animRevealedNodes) return data;
     const src = graph.source(edge);
     const tgt = graph.target(edge);
     if (!animRevealedNodes.has(src) || !animRevealedNodes.has(tgt)) return { ...data, hidden: true };
@@ -236,6 +238,11 @@ function resumeAnimation() {
 function stepAnimation() {
   if (animIndex >= sortedNodes.length) {
     stopAnimation(false);
+    // Todos os nós revelados — remove os reducers da animação para não
+    // deixar um reducer órfão referenciando estado que será zerado depois.
+    renderer.setSetting("nodeReducer", null);
+    renderer.setSetting("edgeReducer", null);
+    renderer.refresh();
     animCounter.textContent = `Concluído (${sortedNodes.length} nós)`;
     return;
   }
@@ -254,7 +261,18 @@ function stepAnimation() {
   renderer.refresh();
 }
 
+function pausePhysics() {
+  if (!physicsRunning) return;
+  fa2Worker.stop();
+  physicsRunning = false;
+  physicsBtn.textContent = "▶ Retomar";
+  physicsBtn.classList.add("paused");
+}
+
 function startAnimation() {
+  // A animação reposiciona os nós manualmente; a física rodando junto
+  // empilha nós e pode gerar posições NaN que travam o Sigma.
+  pausePhysics();
   highlightNode(null);
   animRevealedNodes = new Set();
   animIndex = 0;
@@ -271,10 +289,12 @@ function startAnimation() {
   }
 
   renderer.setSetting("nodeReducer", (node, data) => {
+    if (!animRevealedNodes) return data;
     if (!animRevealedNodes.has(node)) return { ...data, hidden: true, label: null };
     return data;
   });
   renderer.setSetting("edgeReducer", (edge, data) => {
+    if (!animRevealedNodes) return data;
     const src = graph.source(edge);
     const tgt = graph.target(edge);
     if (!animRevealedNodes.has(src) || !animRevealedNodes.has(tgt)) return { ...data, hidden: true };
@@ -374,6 +394,11 @@ function buildGraph(nodesData, edgesData) {
   secondDegreeNodes = new Set();
   displayEpisodeList([]);
   displayNodeInfo(null);
+  setNodeTabsEnabled(false);
+  const focusBtn = document.getElementById("focusButton");
+  focusBtn.disabled = true;
+  focusBtn.classList.remove("active");
+  focusBtn.textContent = "◎ Focar";
   document.getElementById("searchMessage").textContent = "";
   document.getElementById("EpNumber").value = "";
 
@@ -454,7 +479,7 @@ function buildGraph(nodesData, edgesData) {
 
   // Renderer events (re-added each build since renderer is new)
   renderer.on("clickNode", ({ node }) => {
-    if (animInterval) stopAnimation(true);
+    stopAnimation(true);
     const searchMessage = document.getElementById("searchMessage");
     searchMessage.textContent = `Ep. ${node}: ${graph.getNodeAttribute(node, "titulo")}`;
     searchMessage.className = "message";
@@ -463,6 +488,7 @@ function buildGraph(nodesData, edgesData) {
   });
 
   renderer.on("clickStage", () => {
+    stopAnimation(true);
     highlightNode(null);
     document.getElementById("searchMessage").textContent = "";
   });

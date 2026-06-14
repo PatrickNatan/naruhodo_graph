@@ -302,14 +302,22 @@ img {
 
 
 /* Grafo (Sigma.js canvas) */
-#naruhodo_graph {
+.graph-wrapper {
+    position: relative;
     width: 100%;
     height: 80vh;
     border: 1px solid #d1d5db;
     border-radius: 0.5rem;
     background-color: #ffffff;
     box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
-    position: relative;
+    overflow: hidden;
+}
+
+#naruhodo_graph {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
 }
 
 .graph-loading {
@@ -630,7 +638,7 @@ img {
         display: none;
     }
 
-    #naruhodo_graph {
+    .graph-wrapper {
         aspect-ratio: 1 / 1;
         height: auto;
         width: calc(100% + 3rem);
