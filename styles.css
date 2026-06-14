@@ -1,3 +1,31 @@
+/* Design tokens — Naruhodo em Grafo */
+:root {
+    --color-interactive:       #3b82f6;
+    --color-interactive-deep:  #2563eb;
+    --color-animate-ready:     #6d28d9;
+    --color-animate-playing:   #dc2626;
+    --color-animate-paused:    #d97706;
+    --color-export-action:     #059669;
+    --color-surface:           #ffffff;
+    --color-ink-primary:       #1f2937;
+    --color-ink-body:          #374151;
+    --color-ink-secondary:     #4b5563;
+    --color-ink-muted:         #6b7280;
+    --color-ink-faint:         #9ca3af;
+    --color-border-default:    #d1d5db;
+    --color-border-light:      #e5e7eb;
+    --color-bg-hover:          #f3f4f6;
+    --color-bg-subtle:         #f9fafb;
+    --space-xs:   0.5rem;
+    --space-sm:   0.75rem;
+    --space-md:   1rem;
+    --space-lg:   1.5rem;
+    --rounded-pill: 50px;
+    --rounded-md:   8px;
+    --rounded-sm:   6px;
+    --rounded-xs:   4px;
+}
+
 body {
     flex-direction: column;
 }
@@ -11,18 +39,19 @@ img {
     display: flex;
     justify-content: center;
     gap: 1rem;
-    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
 }
 
 .podcast-button {
   background-image: none;
   display: inline-flex;
   align-items: center;
-  padding: 12px 24px;
-  border-radius: 50px;
+  padding: 0.5rem 1rem;
+  border-radius: var(--rounded-pill);
   font-weight: bold;
-  font-size: 16px;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  transition: background-color 200ms ease, color 200ms ease;
 }
 
 .podcast-button:hover {
@@ -159,12 +188,19 @@ img {
     margin-bottom: -2px;
 }
 
+.tab-label-short { display: none; }
+
 .tab-button.active {
     border-bottom-color: black;
 }
 
-.tab-button:hover {
+.tab-button:hover:not(:disabled) {
     color: black;
+}
+
+.tab-button:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
 }
 
 .tab-content {
@@ -230,9 +266,9 @@ img {
 .animate-counter {
     font-size: 0.8rem;
     color: #6b7280;
-    min-width: 6rem;
 }
 /* --- */
+
 
 /* Grafo (Sigma.js canvas) */
 #naruhodo_graph {
@@ -244,13 +280,44 @@ img {
     box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
     position: relative;
 }
+
+.graph-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    color: #6b7280;
+    font-size: 0.875rem;
+    z-index: 5;
+    border-radius: 0.5rem;
+}
+
+.graph-legend {
+    position: absolute;
+    bottom: 0.75rem;
+    left: 0.75rem;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 0.35rem 0.6rem;
+    font-size: 0.72rem;
+    color: #4b5563;
+    line-height: 1.6;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem;
+}
 /* --- */
 
 /* Episodios Relacionados */
 #episodeList {
     margin-top: 1.5rem;
     width: 100%;
-    max-height: 20rem;
+    max-height: 24rem;
     overflow-y: auto;
     border: 1px solid #d1d5db;
     border-radius: 0.5rem;
@@ -397,11 +464,24 @@ img {
 /* Episodes note */
 .episodes-note {
     font-size: 0.78rem;
-    color: #9ca3af;
+    color: #6b7280;
     text-align: center;
     margin-top: 0.5rem;
     margin-bottom: 1rem;
     font-style: italic;
+}
+
+/* Screen reader only */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 /* --- */
 
@@ -438,14 +518,21 @@ img {
 }
 /* --- */
 
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
 @media (max-width: 640px) {
     html, body {
         overflow-x: hidden;
         max-width: 100vw;
-    }
-
-    .podcast-buttons {
-        margin-top: 0.5rem;
     }
 
     .container {
@@ -465,12 +552,12 @@ img {
     .search-bar      { order: 1; padding: 0 0.75rem; }
     #graphTab        { order: 2; }
     .tabs            { order: 3; }
-    #detailsTab,
     #nodeInfoTab,
+    #detailsTab,
     #rankingTab      { order: 4; padding: 0 0.75rem; }
 
     .title {
-        font-size: 1rem;
+        font-size: 1.25rem;
         overflow: hidden;
         text-overflow: ellipsis;
     }
@@ -538,14 +625,15 @@ img {
         align-items: center;
         justify-content: center;
         gap: 0.2rem;
+        min-height: 44px;
     }
 
     .tabs {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(4, 1fr);
         border-bottom: none;
         gap: 0.25rem;
-        padding: 0.4rem 0.75rem;
+        padding: 0.75rem 0.75rem 0.4rem;
         margin-bottom: 0;
     }
 
@@ -557,10 +645,14 @@ img {
         border-radius: 0.375rem;
         margin-bottom: 0;
         min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
+
+    .tab-label-full  { display: none; }
+    .tab-label-short { display: inline; }
 
     .tab-button.active {
         background-color: #1f2937;

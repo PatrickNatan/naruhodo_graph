@@ -9,6 +9,17 @@ import pagerank from "graphology-metrics/centrality/pagerank.js";
 
 const BASE = import.meta.env.BASE_URL;
 
+// Accessibility
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// Graph highlight colors (subsistema do grafo — ver DESIGN.md § Colors)
+const COLOR_NODE_DEFAULT   = "#87CEEB"; // cor inicial de todos os nós
+const COLOR_NODE_SELECTED  = "#ef4444"; // nó clicado/pesquisado
+const COLOR_NODE_NEIGHBOR1 = "#4caf50"; // vizinhos de 1º grau
+const COLOR_NODE_NEIGHBOR2 = "#ffc107"; // vizinhos de 2º grau
+const COLOR_NODE_DIMMED    = "#e5e7eb"; // nós fora do highlight
+const COLOR_EDGE_DEFAULT   = "#9ca3af"; // arestas em repouso
+
 // Module-scope state — reassigned on every buildGraph()
 let graph, renderer, fa2Worker, nodeMetrics, sortedNodes;
 let physicsRunning = true;
@@ -75,6 +86,38 @@ function resetNodeAppearance() {
   renderer.setSetting("edgeReducer", null);
 }
 
+function updateContextStrip(nodeId) {
+  if (!nodeId) {
+    history.replaceState(null, "", location.pathname + location.search.replace(/[?&]ep=[^&]*/g, "").replace(/^&/, "?") || location.pathname);
+    return;
+  }
+  const url = new URL(location.href);
+  url.searchParams.set("ep", nodeId);
+  history.replaceState(null, "", url.toString());
+}
+
+function findNodeByTitle(query) {
+  const q = query.toLowerCase();
+  let match = null;
+  graph.forEachNode((node, attrs) => {
+    if (!match && attrs.titulo && attrs.titulo.toLowerCase().includes(q)) match = node;
+  });
+  return match;
+}
+
+function setNodeTabsEnabled(enabled) {
+  ["nodeInfoTab", "detailsTab"].forEach(id => {
+    const btn = document.querySelector(`[data-tab="${id}"]`);
+    btn.disabled = !enabled;
+    if (!enabled && btn.classList.contains("active")) {
+      btn.classList.remove("active");
+      document.querySelectorAll(".tab-content").forEach(tc => (tc.style.display = "none"));
+      document.querySelector('[data-tab="graphTab"]').classList.add("active");
+      document.getElementById("graphTab").style.display = "block";
+    }
+  });
+}
+
 function highlightNode(nodeId) {
   if (nodeId === null) {
     highlightedNodes.clear();
@@ -85,6 +128,8 @@ function highlightNode(nodeId) {
     renderer.refresh();
     displayEpisodeList([]);
     displayNodeInfo(null);
+    updateContextStrip(null);
+    setNodeTabsEnabled(false);
     return;
   }
 
@@ -101,13 +146,13 @@ function highlightNode(nodeId) {
   renderer.setSetting("nodeReducer", (node, data) => {
     const res = { ...data };
     if (node === nodeId) {
-      res.color = "#ef4444"; res.zIndex = 2; res.highlighted = true;
+      res.color = COLOR_NODE_SELECTED; res.zIndex = 2; res.highlighted = true;
     } else if (firstDegreeNodes.has(node)) {
-      res.color = "#4caf50"; res.zIndex = 1;
+      res.color = COLOR_NODE_NEIGHBOR1; res.zIndex = 1;
     } else if (secondDegreeNodes.has(node)) {
-      res.color = "#ffc107"; res.zIndex = 1;
+      res.color = COLOR_NODE_NEIGHBOR2; res.zIndex = 1;
     } else {
-      res.color = "#e5e7eb"; res.label = null; res.zIndex = 0;
+      res.color = COLOR_NODE_DIMMED; res.label = null; res.zIndex = 0;
     }
     return res;
   });
@@ -124,6 +169,8 @@ function highlightNode(nodeId) {
   firstDegree.forEach(n => episodes.push({ id: n, label: graph.getNodeAttribute(n, "titulo") }));
   displayEpisodeList(episodes);
   displayNodeInfo(nodeId);
+  updateContextStrip(nodeId);
+  setNodeTabsEnabled(true);
 }
 
 function pauseAnimation() {
@@ -190,6 +237,17 @@ function startAnimation() {
   animRevealedNodes = new Set();
   animIndex = 0;
 
+  // With reduced motion, reveal all nodes instantly instead of animating
+  if (prefersReducedMotion) {
+    sortedNodes.forEach(n => animRevealedNodes.add(n));
+    animIndex = sortedNodes.length;
+    renderer.setSetting("nodeReducer", null);
+    renderer.setSetting("edgeReducer", null);
+    renderer.refresh();
+    animCounter.textContent = `Concluído (${sortedNodes.length} nós)`;
+    return;
+  }
+
   renderer.setSetting("nodeReducer", (node, data) => {
     if (!animRevealedNodes.has(node)) return { ...data, hidden: true, label: null };
     return data;
@@ -210,29 +268,30 @@ function displayEpisodeList(episodes) {
   const div = document.getElementById("episodeList");
   if (!episodes.length) { div.style.display = "none"; return; }
   episodes.sort((a, b) => parseInt(a.id) - parseInt(b.id));
-  let html = "<table><thead><tr><th>ID do Episodio</th><th>Titulo do Episodio</th></tr></thead><tbody>";
+  let html = "<table><thead><tr><th>Ep.</th><th>Título</th></tr></thead><tbody>";
   episodes.forEach(ep => { html += `<tr><td>${ep.id}</td><td>${ep.label}</td></tr>`; });
   html += "</tbody></table>";
   div.style.display = "block";
   div.innerHTML = html;
 }
 
+
 function displayNodeInfo(nodeId) {
   const div = document.getElementById("nodeInfoContent");
-  if (!nodeId) { div.innerHTML = "<p>Clique ou pesquise um no no grafo para ver suas metricas.</p>"; return; }
+  if (!nodeId) { div.innerHTML = "<p>Clique ou pesquise um nó no grafo para ver suas métricas.</p>"; return; }
   const metrics = nodeMetrics.get(nodeId);
   const titulo = graph.getNodeAttribute(nodeId, "titulo");
   div.innerHTML = `
-    <h4>Metricas para o Episodio ${nodeId}</h4>
-    <p><strong>Titulo:</strong> ${titulo}</p>
+    <h4>Episódio ${nodeId}</h4>
+    <p><strong>Título:</strong> ${titulo}</p>
     <ul>
-      <li><strong>Grau (Total de conexoes):</strong> ${metrics.degree}</li>
-      <li><strong>Grau de Entrada (Citacoes Recebidas):</strong> ${metrics.inDegree}</li>
-      <li><strong>Grau de Saida (Citacoes Feitas):</strong> ${metrics.outDegree}</li>
+      <li><strong>Grau (Total de conexões):</strong> ${metrics.degree}</li>
+      <li><strong>Grau de Entrada (Citações Recebidas):</strong> ${metrics.inDegree}</li>
+      <li><strong>Grau de Saída (Citações Feitas):</strong> ${metrics.outDegree}</li>
       <li><strong>Coeficiente de Agrupamento:</strong> ${metrics.clustering.toFixed(3)}</li>
     </ul>
-    <small>O <strong>coeficiente de agrupamento</strong> mede o quao conectados os vizinhos deste no estao entre si.</small>
-    <small>Ver mais em <a href="https://pt.wikipedia.org/wiki/Coeficiente_de_agrupamento">Wikipedia</a></small>
+    <small>O <strong>coeficiente de agrupamento</strong> mede o quão conectados os vizinhos deste nó estão entre si.</small>
+    <small>Ver mais em <a href="https://pt.wikipedia.org/wiki/Coeficiente_de_agrupamento" target="_blank" rel="noopener">Wikipedia</a></small>
   `;
 }
 
@@ -282,9 +341,9 @@ function buildGraph(nodesData, edgesData) {
   animCounter.textContent = "";
   animBtn.textContent = "▶ Animar";
   animBtn.classList.remove("playing");
-  physicsRunning = true;
-  physicsBtn.textContent = "⏸︎ Pausar";
-  physicsBtn.classList.remove("paused");
+  physicsRunning = !prefersReducedMotion;
+  physicsBtn.textContent = prefersReducedMotion ? "▶ Retomar" : "⏸︎ Pausar";
+  physicsBtn.classList.toggle("paused", prefersReducedMotion);
   highlightedNodes = new Set();
   highlightedEdges = new Set();
   firstDegreeNodes = new Set();
@@ -302,7 +361,7 @@ function buildGraph(nodesData, edgesData) {
       label: `${d.numero}: ${d.titulo}`,
       titulo: d.titulo,
       size: 8,
-      color: "#87CEEB",
+      color: COLOR_NODE_DEFAULT,
       x: Math.random() * 100,
       y: Math.random() * 100,
     });
@@ -314,7 +373,7 @@ function buildGraph(nodesData, edgesData) {
     if (graph.hasNode(src) && graph.hasNode(tgt)) {
       const edgeKey = `${src}->${tgt}`;
       if (!graph.hasEdge(edgeKey)) {
-        graph.addEdgeWithKey(edgeKey, src, tgt, { color: "#9ca3af", size: 1.5, type: "arrow" });
+        graph.addEdgeWithKey(edgeKey, src, tgt, { color: COLOR_EDGE_DEFAULT, size: 1.5, type: "arrow" });
       }
     }
   });
@@ -373,7 +432,7 @@ function buildGraph(nodesData, edgesData) {
   renderer.on("clickNode", ({ node }) => {
     if (animInterval) stopAnimation(true);
     const searchMessage = document.getElementById("searchMessage");
-    searchMessage.textContent = `Episodio ${node}: ${graph.getNodeAttribute(node, "titulo")}`;
+    searchMessage.textContent = `Ep. ${node}: ${graph.getNodeAttribute(node, "titulo")}`;
     searchMessage.className = "message";
     document.getElementById("EpNumber").value = node;
     highlightNode(node);
@@ -384,9 +443,15 @@ function buildGraph(nodesData, edgesData) {
     document.getElementById("searchMessage").textContent = "";
   });
 
-  // Physics worker
+  // Physics worker — skip continuous simulation if user prefers reduced motion
   fa2Worker = new FA2Layout(graph, { settings: fa2Settings });
-  fa2Worker.start();
+  if (prefersReducedMotion) {
+    physicsRunning = false;
+    physicsBtn.textContent = "▶ Retomar";
+    physicsBtn.classList.add("paused");
+  } else {
+    fa2Worker.start();
+  }
 
   renderRanking();
 }
@@ -396,6 +461,22 @@ async function initGraph() {
   const edgesData = await loadCSV(`${BASE}data/edges.csv`, ",");
 
   buildGraph(nodesData, edgesData);
+
+  // Esconder loading state
+  const loadingEl = document.getElementById("graphLoading");
+  if (loadingEl) loadingEl.style.display = "none";
+
+  // Restaurar seleção da URL (?ep=NNN)
+  const epParam = new URLSearchParams(location.search).get("ep");
+  if (epParam && graph.hasNode(epParam)) {
+    highlightNode(epParam);
+    document.getElementById("EpNumber").value = epParam;
+    const nodePos = renderer.getNodeDisplayData(epParam);
+    if (nodePos) renderer.getCamera().animate(
+      { x: nodePos.x, y: nodePos.y, ratio: 0.3 },
+      { duration: prefersReducedMotion ? 0 : 750 }
+    );
+  }
 
   // Event listeners — set up ONCE, reference module-scope vars
   animBtn.addEventListener("click", () => {
@@ -432,24 +513,38 @@ async function initGraph() {
   document.getElementById("searchButton").addEventListener("click", () => {
     const searchMessage = document.getElementById("searchMessage");
     searchMessage.textContent = "";
-    const epNumber = document.getElementById("EpNumber").value.trim();
-    if (!epNumber || isNaN(parseInt(epNumber))) {
-      searchMessage.className = "error";
-      searchMessage.textContent = "Numero de episodio invalido";
-      return;
+    const query = document.getElementById("EpNumber").value.trim();
+    if (!query) return;
+
+    let targetNode = null;
+    const asNumber = parseInt(query, 10);
+
+    if (!isNaN(asNumber) && String(asNumber) === query) {
+      // Busca por número exato
+      targetNode = String(asNumber);
+      if (!graph.hasNode(targetNode)) targetNode = String(asNumber - 1);
+    } else {
+      // Busca por título
+      targetNode = findNodeByTitle(query);
     }
-    let targetNode = epNumber;
-    if (!graph.hasNode(targetNode)) targetNode = String(parseInt(epNumber) - 1);
-    if (graph.hasNode(targetNode)) {
+
+    if (targetNode && graph.hasNode(targetNode)) {
       highlightNode(targetNode);
       searchMessage.className = "message";
-      searchMessage.textContent = `Episodio ${targetNode}: ${graph.getNodeAttribute(targetNode, "titulo")}`;
+      searchMessage.textContent = `Ep. ${targetNode}: ${graph.getNodeAttribute(targetNode, "titulo")}`;
       const nodePos = renderer.getNodeDisplayData(targetNode);
-      if (nodePos) renderer.getCamera().animate({ x: nodePos.x, y: nodePos.y, ratio: 0.3 }, { duration: 750 });
+      if (nodePos) renderer.getCamera().animate(
+        { x: nodePos.x, y: nodePos.y, ratio: 0.3 },
+        { duration: prefersReducedMotion ? 0 : 750 }
+      );
     } else {
       searchMessage.className = "error";
-      searchMessage.textContent = `Episodio ${epNumber} nao encontrado`;
+      searchMessage.textContent = `Nenhum episódio encontrado para "${query}"`;
     }
+  });
+
+  document.getElementById("EpNumber").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") document.getElementById("searchButton").click();
   });
 
   document.getElementById("clearButton").addEventListener("click", () => {
