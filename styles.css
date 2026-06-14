@@ -267,6 +267,37 @@ img {
     font-size: 0.8rem;
     color: #6b7280;
 }
+
+.focus-button {
+    position: absolute;
+    bottom: 0.75rem;
+    right: 0.75rem;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--color-ink-secondary);
+    border: 1px solid var(--color-border-light);
+    font-weight: 600;
+    padding: 0.35rem 0.7rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.72rem;
+    transition: background-color 200ms, color 200ms, border-color 200ms;
+}
+
+.focus-button:hover:not(:disabled) {
+    background-color: var(--color-bg-hover);
+}
+
+.focus-button.active {
+    background-color: var(--color-ink-primary);
+    color: var(--color-surface);
+    border-color: var(--color-ink-primary);
+}
+
+.focus-button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
 /* --- */
 
 

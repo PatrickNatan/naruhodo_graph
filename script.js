@@ -26,6 +26,7 @@ let physicsRunning = true;
 let animRevealedNodes = null, animInterval = null, animIndex = 0;
 let highlightedNodes = new Set(), highlightedEdges = new Set();
 let firstDegreeNodes = new Set(), secondDegreeNodes = new Set();
+let focusMode = false, currentHighlightedNode = null;
 
 const fa2Settings = {
   barnesHutOptimize: true,
@@ -105,6 +106,40 @@ function findNodeByTitle(query) {
   return match;
 }
 
+function applyHighlightReducers(nodeId) {
+  renderer.setSetting("nodeReducer", (node, data) => {
+    const res = { ...data };
+    if (node === nodeId) {
+      res.color = COLOR_NODE_SELECTED; res.zIndex = 2; res.highlighted = true;
+    } else if (firstDegreeNodes.has(node)) {
+      res.color = COLOR_NODE_NEIGHBOR1; res.zIndex = 1;
+    } else if (secondDegreeNodes.has(node)) {
+      res.color = COLOR_NODE_NEIGHBOR2; res.zIndex = 1;
+    } else if (focusMode) {
+      res.hidden = true; res.label = null; res.zIndex = 0;
+    } else {
+      res.color = COLOR_NODE_DIMMED; res.label = null; res.zIndex = 0;
+    }
+    return res;
+  });
+  renderer.setSetting("edgeReducer", (edge, data) => {
+    const res = { ...data };
+    if (!highlightedEdges.has(edge)) { res.color = "#f0f0f0"; res.hidden = true; }
+    return res;
+  });
+}
+
+function setFocusMode(enabled) {
+  focusMode = enabled;
+  const btn = document.getElementById("focusButton");
+  btn.textContent = enabled ? "◉ Focar" : "◎ Focar";
+  btn.classList.toggle("active", enabled);
+  if (currentHighlightedNode) {
+    applyHighlightReducers(currentHighlightedNode);
+    renderer.refresh();
+  }
+}
+
 function setNodeTabsEnabled(enabled) {
   ["nodeInfoTab", "detailsTab"].forEach(id => {
     const btn = document.querySelector(`[data-tab="${id}"]`);
@@ -120,6 +155,7 @@ function setNodeTabsEnabled(enabled) {
 
 function highlightNode(nodeId) {
   if (nodeId === null) {
+    currentHighlightedNode = null;
     highlightedNodes.clear();
     highlightedEdges.clear();
     firstDegreeNodes.clear();
@@ -130,9 +166,13 @@ function highlightNode(nodeId) {
     displayNodeInfo(null);
     updateContextStrip(null);
     setNodeTabsEnabled(false);
+    const focusBtn = document.getElementById("focusButton");
+    focusBtn.disabled = true;
+    setFocusMode(false);
     return;
   }
 
+  currentHighlightedNode = nodeId;
   const { firstDegree, secondDegree } = getNeighborhood(nodeId, 2);
   firstDegreeNodes = firstDegree;
   secondDegreeNodes = secondDegree;
@@ -143,26 +183,7 @@ function highlightNode(nodeId) {
     if (highlightedNodes.has(src) && highlightedNodes.has(tgt)) highlightedEdges.add(edge);
   });
 
-  renderer.setSetting("nodeReducer", (node, data) => {
-    const res = { ...data };
-    if (node === nodeId) {
-      res.color = COLOR_NODE_SELECTED; res.zIndex = 2; res.highlighted = true;
-    } else if (firstDegreeNodes.has(node)) {
-      res.color = COLOR_NODE_NEIGHBOR1; res.zIndex = 1;
-    } else if (secondDegreeNodes.has(node)) {
-      res.color = COLOR_NODE_NEIGHBOR2; res.zIndex = 1;
-    } else {
-      res.color = COLOR_NODE_DIMMED; res.label = null; res.zIndex = 0;
-    }
-    return res;
-  });
-
-  renderer.setSetting("edgeReducer", (edge, data) => {
-    const res = { ...data };
-    if (!highlightedEdges.has(edge)) { res.color = "#f0f0f0"; res.hidden = true; }
-    return res;
-  });
-
+  applyHighlightReducers(nodeId);
   renderer.refresh();
 
   const episodes = [{ id: nodeId, label: graph.getNodeAttribute(nodeId, "titulo") }];
@@ -171,6 +192,7 @@ function highlightNode(nodeId) {
   displayNodeInfo(nodeId);
   updateContextStrip(nodeId);
   setNodeTabsEnabled(true);
+  document.getElementById("focusButton").disabled = false;
 }
 
 function pauseAnimation() {
@@ -336,6 +358,8 @@ function buildGraph(nodesData, edgesData) {
   if (renderer) renderer.kill();
 
   // Reset state
+  focusMode = false;
+  currentHighlightedNode = null;
   animRevealedNodes = null;
   animIndex = 0;
   animCounter.textContent = "";
@@ -508,6 +532,10 @@ async function initGraph() {
 
   document.getElementById("resetLayoutButton").addEventListener("click", () => {
     buildGraph(nodesData, edgesData);
+  });
+
+  document.getElementById("focusButton").addEventListener("click", () => {
+    setFocusMode(!focusMode);
   });
 
   document.getElementById("searchButton").addEventListener("click", () => {
